@@ -15,20 +15,28 @@ Ext.define('HydraWM.Application', {
         // TODO: add stores here
     ],
     apps: {},
+    config: {
+        'hydra-server-addr': 'localhost:3000',
+        'topic-thunder-url': 'http://topic-beta-topicthunder0.aws-ireland.innotechapp.com/#/panel?id=bbvaes-pro',
+        'probe-password': '',
+        'hydra-probe-port': ''
+    },
+    configWindow: null,
     maxAbsoluteChartPoints: 999,
     maxAreaChartPoints: 12,
     launch: function() {
         var me = this;
         $.ajax({
             type: 'GET',
-            url: 'http://localhost:3000/apps?callback=?',
+            url: 'http://' + me.config['hydra-server-addr'] + '/apps?callback=?',
             async: false,
             jsonpCallback: 'jsonCallback',
             contentType: "application/json",
             dataType: 'jsonp',
             success: function(apps) {
                 me.saveApps(apps);
-                me.loadUI(apps);
+                me.loadUI(me.makeItems(apps));
+                me.makeDynamicComponents(apps);
             },
             error: function(e) {
                 console.log(e.message);
@@ -55,77 +63,158 @@ Ext.define('HydraWM.Application', {
         }
         this.apps = finalApps;
     },
-    loadUI: function(apps) {
+    makeItems: function(apps) {
         var me = this;
-        Ext.create('Ext.container.Viewport', {
-            layout: {
-                type: 'fit'
-            },
-            items: [{
-                    xtype: 'container',
-                    layout: {
-                        type: 'border'
-                    },
-                    items: [{
-                            region: 'north',
-                            xtype: 'tabpanel',
-                            id: 'app-charts',
-                            title: 'Charts',
-                            collapsible: true,
-                            split: true,
-                            height: 400,
-                            plugins: [{
+        var items =  [{
+                xtype: 'container',
+                layout: {
+                    type: 'border'
+                },
+                items: [{
+                        region: 'north',
+                        xtype: 'tabpanel',
+                        id: 'app-charts',
+                        title: 'Hydra Web Monitor',
+                        header: {
+                            titlePosition: 1,
+                            titleAlign: 'center'
+                        },
+                        collapsible: true,
+                        split: true,
+                        height: 400,
+                        plugins: [{
                                 ptype: 'tabscrollermenu',
-                                maxText  : 15,
-                                pageSize : 5
+                                maxText: 15,
+                                pageSize: 5
                             }],
-//                            tools: [{
-//                                    type: 'gear',
-//                                    callback: function(panel, tool) {
-//                                        function setWeight() {
-//                                            panel.setRegionWeight(parseInt(this.text, 10));
-//                                        }
-//
-//                                        var regionMenu = panel.regionMenu || (panel.regionMenu =
-//                                                Ext.widget({
-//                                                    xtype: 'menu',
-//                                                    items: me.createChartsHeaderMenuItems(apps)
-//                                                }));
-//
-//                                        regionMenu.showBy(tool.el);
-//                                    }
-//                                }],
-                            items: []
-                        }, {
-                            region: 'west',
-                            xtype: 'panel',
-                            title: 'Topic Thunder',
-                            collapsible: true,
-                            split: true,
-                            width: 800,
-                            layout: 'fit',
-                            items: [{
+                        tools: [{
+                                type: 'gear',
+                                callback: function(panel, tool) {
+                                    var required = '<span style="color:red;font-weight:bold" data-qtip="Required">*</span>';
+
+                                    if (!me.configWindow) {
+                                        me.configWindow = Ext.create('widget.window', {
+                                            title: 'Configuration',
+                                            header: {
+                                                titlePosition: 2,
+                                                titleAlign: 'center'
+                                            },
+                                            closable: true,
+                                            closeAction: 'hide',
+                                            width: 600,
+                                            items: [{
+                                                    xtype: 'form',
+                                                    layout: 'form',
+                                                    id: 'configForm',
+                                                    bodyPadding: '5 5 5',
+                                                    fieldDefaults: {
+                                                        msgTarget: 'side',
+                                                        labelWidth: 150
+                                                    },
+                                                    defaultType: 'textfield',
+                                                    items: [{
+                                                            fieldLabel: 'Hydra Server Address',
+                                                            afterLabelTextTpl: required,
+                                                            id: 'hydra-server-addr',
+                                                            name: 'hydra-server-addr',
+                                                            allowBlank: false,
+                                                            tooltip: 'Enter your hydra server address'
+                                                        }, {
+                                                            fieldLabel: 'Topic Thunder',
+                                                            afterLabelTextTpl: required,
+                                                            id: 'topic-thunder-url',
+                                                            name: 'topic-thunder-url',
+                                                            vtype: 'url',
+                                                            allowBlank: false,
+                                                            tooltip: 'Enter your topic thunder address'
+                                                        }, {
+                                                            fieldLabel: 'Probe Password',
+                                                            id: 'probe-password',
+                                                            name: 'probe-password',
+                                                            inputType: 'password',
+                                                            allowBlank: true,
+                                                            tooltip: 'Enter your hydra probe password'
+                                                        }, {
+                                                            fieldLabel: 'Hydra Probe Port',
+                                                            id: 'hydra-probe-port',
+                                                            name: 'hydra-probe-port',
+                                                            allowBlank: true,
+                                                            tooltip: 'Enter your hydra probe password'
+                                                        }],
+                                                    buttons: [{
+                                                            text: 'Save',
+                                                            handler: function() {
+                                                                var form = this.up('form').getForm();
+                                                                if (form.isValid()) {
+                                                                    var fieldValues = form.getValues();
+                                                                    for (key in me.config) {
+                                                                        me.config[key] = form.findField(key).getValue();
+                                                                    }
+                                                                    Ext.getCmp('viewport').destroy();
+                                                                    me.launch();
+                                                                    me.configWindow.hide();
+                                                                }
+                                                            }
+                                                        }, {
+                                                            text: 'Cancel',
+                                                            handler: function() {
+//                                                        this.up('form').getForm().reset();
+                                                                me.configWindow.hide();
+                                                            }
+                                                        }]
+                                                }]
+                                        });
+                                    }
+//                                    button.dom.disabled = true;
+                                    if (me.configWindow.isVisible()) {
+                                        me.configWindow.hide(this, function() {
+//                                            button.dom.disabled = false;
+                                        });
+                                    } else {
+                                        me.configWindow.show(this, function() {
+                                            var form = Ext.getCmp('configForm').getForm();
+                                            for (key in me.config) {
+                                                form.findField(key).setValue(me.config[key]);
+                                            }
+//                                            form.setValues(me.config);
+                                        });
+                                    }
+                                }
+                            }],
+                        items: []
+                    }, {
+                        region: 'west',
+                        xtype: 'panel',
+                        title: 'Topic Thunder',
+                        collapsible: true,
+                        split: true,
+                        width: 800,
+                        layout: 'fit',
+                        items: [{
                                 xtype: "component",
                                 autoEl: {
                                     tag: "iframe",
-                                    src: "http://topic-beta-topicthunder0.aws-ireland.innotechapp.com/#/panel?id=bbvaes-pro"
+                                    src: me.config['topic-thunder-url']
                                 }
                             }]
-                        }, {
-                            region: 'center',
-                            xtype: 'panel',
-                            id: 'app-grids',
-                            title: 'Applications',
-                            bodyPadding: 0,
-                            layout: {
-                                type: 'accordion',
-                                multi: true
-                            },
-                            items: []
-                        }]
-                }]
-        });
-
+                    }, {
+                        region: 'center',
+                        xtype: 'panel',
+                        id: 'app-grids',
+                        title: 'Applications',
+                        bodyPadding: 0,
+                        layout: {
+                            type: 'accordion',
+                            multi: true
+                        },
+                        items: []
+                    }]
+            }];
+        
+        return items;
+    },
+    makeDynamicComponents: function(apps) {
+        var me = this;
         for (appId in apps) {
             var instance = {};
             var instances = [];
@@ -154,7 +243,16 @@ Ext.define('HydraWM.Application', {
             }
             this.makeIntervalAjaxRequest(appId, store);
         }
-
+    },
+    loadUI: function(items) {
+        var me = this;
+        Ext.create('Ext.container.Viewport', {
+            id: 'viewport',
+            layout: {
+                type: 'fit'
+            },
+            items: me.makeItems(items)
+        });
     },
     createChartsPanel: function(appId, attr) {
         var me = this;
@@ -170,9 +268,7 @@ Ext.define('HydraWM.Application', {
                 collapsible: true,
                 split: true,
                 layout: 'fit',
-//                width: 800,
                 flex: 1,
-//                items: [me.createAreaChartPanel(appId, attr)]
                 items: [me.createAbsoluteChartPanel(appId, attr)]
             }, {
                 region: 'center',
@@ -180,7 +276,6 @@ Ext.define('HydraWM.Application', {
                 layout: 'fit',
                 flex: 1,
                 items: [me.createAreaChartPanel(appId, attr)]
-//                items: [me.createAbsoluteChartPanel(appId, attr)]
             }]
         });
     },
@@ -215,12 +310,12 @@ Ext.define('HydraWM.Application', {
     createAreaChart: function(prefix, appId, attr) {
         var me = this;
         var time = (new Date()).getTime();
-        
-//        var containerId = '#' + prefix + '-' + appId + '-' + attr;
+
         var seriesOptions = [];
         var data = [];
         var generateInitialData = function(index) {
             var data = [];
+            console.log("DATA " + index + " = " + me.apps[appId].charts.absolutes[attr].data[index].length);
             for (var i = -me.maxAreaChartPoints + me.apps[appId].charts.absolutes[attr].data[index].length; i <= 0; i++) {
 //            for (var i = -12; i <= 0; i++) {
                 data.push([
@@ -232,14 +327,15 @@ Ext.define('HydraWM.Application', {
             return data;
         };
         for (var i = 0; i < me.apps[appId].instances.length; i++) {
+            console.log("ENTRA");
             seriesOptions.push({
                 name: me.apps[appId].instances[i],
                 data: generateInitialData(i)
             });
             data.push([]);
         }
-        
-        $(function () {
+
+        $(function() {
 //            me.apps[appId].charts.areas[attr] = new Highcharts.Chart({
             var chart = {
                 'chart': new Highcharts.Chart({
@@ -327,14 +423,25 @@ Ext.define('HydraWM.Application', {
                     chart: {
                         renderTo: prefix + '-' + appId + '-' + attr
                     },
+                    plotOptions: {
+                        series: {
+                            lineWidth: 6,
+                            states: {
+                                hover: {
+                                    enabled: true,
+                                    lineWidth: 6
+                                }
+                            }
+                        }
+                    },
                     rangeSelector: {
                         buttons: [{
                                 count: 1,
-                                type: 'second',
+                                type: 'minute',
                                 text: '1M'
                             }, {
                                 count: 5,
-                                type: 'second',
+                                type: 'minute',
                                 text: '5M'
                             }, {
                                 type: 'all',
@@ -368,15 +475,10 @@ Ext.define('HydraWM.Application', {
     },
     createGrid: function(appId, store, fields) {
         return Ext.create('Ext.grid.Panel', {
-//              height: 250,
             collapsible: true,
             title: appId,
             store: store,
             multiSelect: true,
-            margin: '0',
-            padding: '0',
-//            collapsible: true,
-//            split: true,
             viewConfig: {
                 emptyText: 'No instances to display'
             },
@@ -384,47 +486,28 @@ Ext.define('HydraWM.Application', {
         });
     },
     createStore: function(appId) {
-        var me = this;
-        // Maybe not proxy
         return Ext.create('Ext.data.Store', {
-            model: appId + 'Model',
-            proxy: {
-                type: 'ajax',
-                url: 'http://' + me.hydraAddr + '/apps/' + appId + '/Instances',
-                reader: {
-                    type: 'json',
-                    root: 'images'
-                }
-            }
+            model: appId + 'Model'
         });
     },
-    executeInstanceAction: function(action, menuElement, server) {
-	var actionElement = document.createElement("a");
-	actionElement.appendChild(document.createTextNode(action.charAt(0).toUpperCase()));
-	actionElement.setAttribute('href', '#');
-	actionElement.setAttribute('title', action);
-	menuElement.appendChild(actionElement);
-	password = $('#password').val();
-	
-	actionElement.onclick = function() {
-            var url_parts = server.server.split(':');
-            console.log("Sending order '" + action + "' to "+ server.server);
-            $.ajax({
-                type: "GET",
-                url : url_parts[0] + ":" + url_parts[1] + ":" + PROBE_PORT + "/" + action + "?password=" + password,
-                timeout : 3000,
-                success : function(data) {
-                    console.log("Succesfull response " + data + " from '" + server.server + "' to order '" + action + "'");
-                },
-                error : function(data) {
-                    console.log("Error response " + data + " from '" + server.server + "' to order '" + action + "'");
-                }
-            });
-	};
+    executeInstanceAction: function(action) {
+        var me = this;
+        $.ajax({
+            type: "GET",
+            url: me.config['hydra-server-addr'] + "/" + action + "?password=" + me.config['probe-password'],
+            timeout: 3000,
+            success: function(data) {
+                console.log("Succesfull response " + data + " from '" + me.config['hydra-server-addr'] + "' to order '" + action + "'");
+            },
+            error: function(data) {
+                console.log("Error response " + data + " from '" + me.config['hydra-server-addr'] + "' to order '" + action + "'");
+            }
+        });
+//	};
     },
     defineGridColumns: function(fields) {
         var me = this,
-            columns = [];
+                columns = [];
         for (field in fields) {
             columns.push({
                 text: field,
@@ -436,59 +519,50 @@ Ext.define('HydraWM.Application', {
             menuDisabled: true,
             sortable: false,
             xtype: 'actioncolumn',
-            width: 100,
-//            ui: 'button',
+            width: 124,
             items: [{
-//                iconCls: 'sell-col',
-                xtype: 'button',
-                scale: 'small',
-                iconCls: 'icon-delete',
-                text: 'Stress',
-                tooltip: 'stress',
-                handler: function(grid, rowIndex, colIndex) {
-                    me.executeInstanceAction();
-                }
-            }, {
-//                iconCls: 'H',
-                xtype: 'button',
-                text: 'H',
-                tooltip: 'halt',
-                handler: function(grid, rowIndex, colIndex) {
-                    me.executeInstanceAction();
-                }
-            }, {
-//                iconCls: 'sell-col',
-                xtype: 'button',
-                text: 'R',
-                tooltip: 'ready',
-                handler: function(grid, rowIndex, colIndex) {
-                    me.executeInstanceAction();
-                }
-            }, {
-//                iconCls: 'sell-col',
-                xtype: 'button',
-                text: 'L',
-                tooltip: 'lock',
-                handler: function(grid, rowIndex, colIndex) {
-                    me.executeInstanceAction();
-                }
-            }, {
-//                iconCls: 'sell-col',
-                xtype: 'button',
-                text: 'U',
-                tooltip: 'unlock',
-                handler: function(grid, rowIndex, colIndex) {
-                    me.executeInstanceAction();
-                }
-            }, {
-//                iconCls: 'sell-col',
-                xtype: 'button',
-                text: 'D',
-                tooltip: 'delete',
-                handler: function(grid, rowIndex, colIndex) {
-                    me.executeInstanceAction();
-                }
-            }]
+                    iconCls: 'icon-stress',
+                    text: 'Stress',
+                    tooltip: 'stress',
+                    handler: function(grid, rowIndex, colIndex) {
+                        me.executeInstanceAction('stress');
+                    }
+                }, {
+                    iconCls: 'icon-halt',
+                    text: 'Halt',
+                    tooltip: 'halt',
+                    handler: function(grid, rowIndex, colIndex) {
+                        me.executeInstanceAction('halt');
+                    }
+                }, {
+                    iconCls: 'icon-ready',
+                    text: 'Ready',
+                    tooltip: 'ready',
+                    handler: function(grid, rowIndex, colIndex) {
+                        me.executeInstanceAction('ready');
+                    }
+                }, {
+                    iconCls: 'icon-lock',
+                    text: 'Lock',
+                    tooltip: 'lock',
+                    handler: function(grid, rowIndex, colIndex) {
+                        me.executeInstanceAction('lock');
+                    }
+                }, {
+                    iconCls: 'icon-unlock',
+                    text: 'Unlock',
+                    tooltip: 'unlock',
+                    handler: function(grid, rowIndex, colIndex) {
+                        me.executeInstanceAction('unlock');
+                    }
+                }, {
+                    iconCls: 'icon-delete',
+                    text: 'Delete',
+                    tooltip: 'delete',
+                    handler: function(grid, rowIndex, colIndex) {
+                        me.executeInstanceAction('delete');
+                    }
+                }]
         });
         return columns;
     },
@@ -529,7 +603,7 @@ Ext.define('HydraWM.Application', {
 
         function doAjax() {
             Ext.data.JsonP.request({
-                url: 'http://localhost:3000/apps/' + appId + '/instances',
+                url: 'http://' + me.config['hydra-server-addr'] + '/apps/' + appId + '/instances',
                 success: function(result, request) {
                     var now = (new Date()).getTime(); // current time
                     var records = [];
@@ -543,9 +617,9 @@ Ext.define('HydraWM.Application', {
                             var attr = me.apps[appId].chartAttrs[i];
                             if (me.apps[appId].charts.absolutes[attr]) {
                                 var absoluteSerie = me.apps[appId].charts.absolutes[attr].chart.series[j],
-                                    areaSerie = me.apps[appId].charts.areas[attr].chart.series[j];
+                                        areaSerie = me.apps[appId].charts.areas[attr].chart.series[j];
                                 var x = now,
-                                    y = parseFloat(record[attr]);
+                                        y = parseFloat(record[attr]);
                                 absoluteSerie.addPoint([x, y], true, true);
                                 me.apps[appId].charts.absolutes[attr].data[j].push([x, y]);
                                 areaSerie.addPoint([x, y], true, true);

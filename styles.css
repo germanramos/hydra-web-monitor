@@ -1,0 +1,33 @@
+.icon-stress {
+    /*background-image: url(resources/images/icons/stress.png);*/
+    background-image: url(resources/images/icons/thunder.png);
+}
+
+.icon-halt {
+/*    background-image: url(resources/images/icons/halt.png);*/
+    background-image: url(resources/images/icons/pause.png);
+}
+
+.icon-ready {
+    /*background-image: url(resources/images/icons/ready.png);*/
+    background-image: url(resources/images/icons/play.png);
+}
+
+.icon-lock {
+    background-image: url(resources/images/icons/lock.png);
+}
+
+.icon-unlock {
+    background-image: url(resources/images/icons/unlock.png);
+}
+
+.icon-delete {
+    background-image: url(resources/images/icons/delete.png);
+}
+
+.x-action-col-icon {
+    height: 16px;
+    width: 16px;
+    cursor: pointer;
+    margin-right: 4px;
+}
