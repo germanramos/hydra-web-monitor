@@ -158,17 +158,14 @@ Ext.define('HydraWM.Application', {
                                                         }, {
                                                             text: 'Cancel',
                                                             handler: function() {
-//                                                        this.up('form').getForm().reset();
                                                                 me.configWindow.hide();
                                                             }
                                                         }]
                                                 }]
                                         });
                                     }
-//                                    button.dom.disabled = true;
                                     if (me.configWindow.isVisible()) {
                                         me.configWindow.hide(this, function() {
-//                                            button.dom.disabled = false;
                                         });
                                     } else {
                                         me.configWindow.show(this, function() {
@@ -176,7 +173,6 @@ Ext.define('HydraWM.Application', {
                                             for (key in me.config) {
                                                 form.findField(key).setValue(me.config[key]);
                                             }
-//                                            form.setValues(me.config);
                                         });
                                     }
                                 }
@@ -328,11 +324,13 @@ Ext.define('HydraWM.Application', {
         };
         for (var i = 0; i < me.apps[appId].instances.length; i++) {
             console.log("ENTRA");
+            var dataSerie = generateInitialData(i);
             seriesOptions.push({
                 name: me.apps[appId].instances[i],
-                data: generateInitialData(i)
+                data: dataSerie
+//                data: generateInitialData(i)
             });
-            data.push([]);
+            data.push(dataSerie);
         }
 
         $(function() {
@@ -622,8 +620,10 @@ Ext.define('HydraWM.Application', {
                                         y = parseFloat(record[attr]);
                                 absoluteSerie.addPoint([x, y], true, true);
                                 me.apps[appId].charts.absolutes[attr].data[j].push([x, y]);
+                                console.log("DATA " + j + " = " + me.apps[appId].charts.absolutes[attr].data[j].length);
                                 areaSerie.addPoint([x, y], true, true);
                                 me.apps[appId].charts.areas[attr].data[j].push([x, y]);
+                                console.log("DATA " + j + " = " + me.apps[appId].charts.areas[attr].data[j].length);
                             }
                         }
                         records.push(record);
