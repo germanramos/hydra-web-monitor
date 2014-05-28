@@ -28,11 +28,8 @@ Ext.define('HydraWM.Application', {
         var me = this;
         $.ajax({
             type: 'GET',
-            url: 'http://' + me.config['hydra-server-addr'] + '/apps?callback=?',
-            async: false,
-            jsonpCallback: 'jsonCallback',
+            url: 'http://' + me.config['hydra-server-addr'] + '/apps',
             contentType: "application/json",
-            dataType: 'jsonp',
             success: function(apps) {
                 me.saveApps(apps);
                 me.loadUI(me.makeItems(apps));
@@ -600,9 +597,12 @@ Ext.define('HydraWM.Application', {
         Ext.TaskManager.start(advertisementRefresherTask);
 
         function doAjax() {
-            Ext.data.JsonP.request({
+            Ext.Ajax.request({
                 url: 'http://' + me.config['hydra-server-addr'] + '/apps/' + appId + '/instances',
-                success: function(result, request) {
+                success: function(response, request) {
+                    console.log(result);
+                    console.log(request);
+                    var result = Ext.decode(response.responseText);
                     var now = (new Date()).getTime(); // current time
                     var records = [];
                     var j = 0;
