@@ -42,21 +42,24 @@ Ext.define('HydraWM.Application', {
     },
     saveApps: function(apps) {
         var finalApps = {};
-        for (appId in apps) {
-            var appAttrs;
-            for (instanceId in apps[appId]) {
-                appAttrs = apps[appId][instanceId];
-                break;
+        for (i in apps) {
+            var app = apps[i];
+            for (appId in app) {
+                var appAttrs;
+                for (instanceId in app[appId].Instances) {
+                    appAttrs = app[appId].Instances[instanceId];
+                    break;
+                }
+                var chartAttrs = this.extractChartAttributes(appAttrs);
+                finalApps[appId] = {
+                    'chartAttrs': chartAttrs,
+                    'charts': {
+                        'absolutes': {},
+                        'areas': {}
+                    },
+                    'instances': []
+                };
             }
-            var chartAttrs = this.extractChartAttributes(appAttrs);
-            finalApps[appId] = {
-                'chartAttrs': chartAttrs,
-                'charts': {
-                    'absolutes': {},
-                    'areas': {}
-                },
-                'instances': []
-            };
         }
         this.apps = finalApps;
     },
@@ -208,33 +211,36 @@ Ext.define('HydraWM.Application', {
     },
     makeDynamicComponents: function(apps) {
         var me = this;
-        for (appId in apps) {
-            var instance = {};
-            var instances = [];
-            var i = 0;
-            for (instanceId in apps[appId]) {
-                if (i == 0) {
-                    instance = apps[appId][instanceId];
-                    instance['id'] = instanceId;
+        for (i in apps) {
+            var app = apps[i];
+            for (appId in app) {
+                var instance = {};
+                var instances = [];
+                var i = 0;
+                for (instanceId in app[appId].Instances) {
+                    if (i == 0) {
+                        instance = app[appId].Instances[instanceId];
+                        instance['id'] = instanceId;
+                    }
+                    instances.push(instanceId);
+                    i++;
                 }
-                instances.push(instanceId);
-                i++;
-            }
-            me.apps[appId].instances = instances;
-            this.defineModel(appId + 'Model', this.extractFields(instance));
-            var store = this.createStore(appId);
-            var grid = this.createGrid(appId, store, instance);
-            var gridPanel = Ext.getCmp('app-grids');
-            gridPanel.add(grid);
-            var tabPanel = Ext.getCmp('app-charts');
-            for (var i = 0; i < me.apps[appId].chartAttrs.length; i++) {
-                var tab = this.createChartsPanel(appId, me.apps[appId].chartAttrs[i]);
-                tabPanel.add(tab);
-                if (i == 0) {
-                    tabPanel.setActiveTab(0);
+                me.apps[appId].instances = instances;
+                this.defineModel(appId + 'Model', this.extractFields(instance));
+                var store = this.createStore(appId);
+                var grid = this.createGrid(appId, store, instance);
+                var gridPanel = Ext.getCmp('app-grids');
+                gridPanel.add(grid);
+                var tabPanel = Ext.getCmp('app-charts');
+                for (var i = 0; i < me.apps[appId].chartAttrs.length; i++) {
+                    var tab = this.createChartsPanel(appId, me.apps[appId].chartAttrs[i]);
+                    tabPanel.add(tab);
+                    if (i == 0) {
+                        tabPanel.setActiveTab(0);
+                    }
                 }
+                this.makeIntervalAjaxRequest(appId, store);
             }
-            this.makeIntervalAjaxRequest(appId, store);
         }
     },
     loadUI: function(items) {
@@ -598,7 +604,7 @@ Ext.define('HydraWM.Application', {
 
         function doAjax() {
             Ext.Ajax.request({
-                url: 'http://' + me.config['hydra-server-addr'] + '/apps/' + appId + '/instances',
+                url: 'http://' + me.config['hydra-server-addr'] + '/apps/' + appId + '/Instances',
                 success: function(response, request) {
                     console.log(result);
                     console.log(request);
@@ -606,28 +612,31 @@ Ext.define('HydraWM.Application', {
                     var now = (new Date()).getTime(); // current time
                     var records = [];
                     var j = 0;
-                    for (instanceId in result) {
-                        var record = {'id': instanceId};
-                        for (key in result[instanceId]) {
-                            record[key] = result[instanceId][key];
-                        }
-                        for (i in me.apps[appId].chartAttrs) {
-                            var attr = me.apps[appId].chartAttrs[i];
-                            if (me.apps[appId].charts.absolutes[attr]) {
-                                var absoluteSerie = me.apps[appId].charts.absolutes[attr].chart.series[j],
-                                        areaSerie = me.apps[appId].charts.areas[attr].chart.series[j];
-                                var x = now,
-                                        y = parseFloat(record[attr]);
-                                absoluteSerie.addPoint([x, y], true, true);
-                                me.apps[appId].charts.absolutes[attr].data[j].push([x, y]);
-                                console.log("DATA " + j + " = " + me.apps[appId].charts.absolutes[attr].data[j].length);
-                                areaSerie.addPoint([x, y], true, true);
-                                me.apps[appId].charts.areas[attr].data[j].push([x, y]);
-                                console.log("DATA " + j + " = " + me.apps[appId].charts.areas[attr].data[j].length);
+                    for (i in result) {
+                        var instance = result[i];
+                        for (instanceId in instance) {
+                            var record = {'id': instanceId};
+                            for (key in instance[instanceId]) {
+                                record[key] = instance[instanceId][key];
                             }
+                            for (i in me.apps[appId].chartAttrs) {
+                                var attr = me.apps[appId].chartAttrs[i];
+                                if (me.apps[appId].charts.absolutes[attr]) {
+                                    var absoluteSerie = me.apps[appId].charts.absolutes[attr].chart.series[j],
+                                            areaSerie = me.apps[appId].charts.areas[attr].chart.series[j];
+                                    var x = now,
+                                            y = parseFloat(record[attr]);
+                                    absoluteSerie.addPoint([x, y], true, true);
+                                    me.apps[appId].charts.absolutes[attr].data[j].push([x, y]);
+                                    console.log("DATA " + j + " = " + me.apps[appId].charts.absolutes[attr].data[j].length);
+                                    areaSerie.addPoint([x, y], true, true);
+                                    me.apps[appId].charts.areas[attr].data[j].push([x, y]);
+                                    console.log("DATA " + j + " = " + me.apps[appId].charts.areas[attr].data[j].length);
+                                }
+                            }
+                            records.push(record);
+                            j++;
                         }
-                        records.push(record);
-                        j++;
                     }
                     store.loadData(records);
                 },
