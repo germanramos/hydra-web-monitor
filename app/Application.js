@@ -16,10 +16,14 @@ Ext.define('HydraWM.Application', {
     ],
     apps: {},
     config: {
-        'hydra-server-addr': 'localhost:7770',
-        'topic-thunder-url': 'http://topic-beta-topicthunder0.aws-ireland.innotechapp.com/#/panel?id=bbvaes-pro',
+    	'hydra-server-addr': 'hydra-v3-demo-server-0.aws-ireland.innotechapp.com',
+        'hydra-server-admin-port': '7771',
+        'hydra-server-etcd-port': '7401',
+    	//'topic-thunder-url': 'http://topic-beta-topicthunder0.aws-ireland.innotechapp.com/#/panel?id=bbvaes-pro',
+        //'topic-thunder-url': 'http://hydra-v3-demo-server-0:7401/mod/dashboard',
+        'topic-thunder-url': '',
         'probe-password': '',
-        'hydra-probe-port': ''
+        'hydra-probe-port': '9099'
     },
     configWindow: null,
     maxAbsoluteChartPoints: 999,
@@ -28,7 +32,7 @@ Ext.define('HydraWM.Application', {
         var me = this;
         $.ajax({
             type: 'GET',
-            url: 'http://' + me.config['hydra-server-addr'] + '/apps',
+            url: 'http://' + me.config['hydra-server-addr'] + ':' + me.config['hydra-server-admin-port'] + '/apps',
             contentType: "application/json",
             success: function(apps) {
                 me.saveApps(apps);
@@ -119,7 +123,21 @@ Ext.define('HydraWM.Application', {
                                                             name: 'hydra-server-addr',
                                                             allowBlank: false,
                                                             tooltip: 'Enter your hydra server address'
-                                                        }, {
+                                                        },  {
+                                                            fieldLabel: 'Hydra Server Admin Port',
+                                                            afterLabelTextTpl: required,
+                                                            id: 'hydra-server-admin-port',
+                                                            name: 'hydra-server-admin-port',
+                                                            allowBlank: false,
+                                                            tooltip: 'Enter your hydra server admin port'
+                                                        },  {
+                                                            fieldLabel: 'Hydra Server Etcd Port',
+                                                            afterLabelTextTpl: required,
+                                                            id: 'hydra-server-etcd-port',
+                                                            name: 'hydra-server-etcd-port',
+                                                            allowBlank: false,
+                                                            tooltip: 'Enter your hydra server etcd port'
+                                                        },  {
                                                             fieldLabel: 'Topic Thunder',
                                                             afterLabelTextTpl: required,
                                                             id: 'topic-thunder-url',
@@ -504,7 +522,30 @@ Ext.define('HydraWM.Application', {
                 console.log("Error response " + data + " from '" + addr + "' to order '" + action + "'");
             }
         });
-//	};
+    },
+    preExecuteAction: function(action, grid, rowIndex) {
+    	me = this
+    	var rec = grid.getStore().getAt(rowIndex);
+        var extractPort = function(uri) {
+            return uri.substring(0, uri.lastIndexOf(":"));
+        };
+        var addr = extractPort(rec.get('uri')) + ":" + me.config['hydra-probe-port'];
+        me.executeInstanceAction(action, addr);
+    },
+    executeDeleteAction: function(instance, app) {
+    	var me = this;
+    	addr = 'http://' + me.config['hydra-server-addr'] + ':' + me.config['hydra-server-etcd-port'] + '/v2/keys/db/apps/Instances/' + app + '/' + instance + '?recursive=true'; 
+    	$.ajax({
+            type: "DELETE",
+            url: addr,
+            timeout: 3000,
+            success: function(data) {
+                console.log("Succesfull response " + data + " from '" + addr + "' to order delete'");
+            },
+            error: function(data) {
+                console.log("Error response " + data + " from '" + addr + "' to order delete");
+            }
+        });
     },
     defineGridColumns: function(fields) {
         var me = this,
@@ -526,47 +567,43 @@ Ext.define('HydraWM.Application', {
                     text: 'Stress',
                     tooltip: 'stress',
                     handler: function(grid, rowIndex, colIndex) {
-                        var rec = grid.getStore().getAt(rowIndex);
-                        var extractPort = function(uri) {
-                            return uri.substring(0, uri.lastIndexOf(":"));
-                        };
-                        var addr = extractPort(rec.get('uri')) + ":" + me.config['hydra-probe-port'];
-                        me.executeInstanceAction('stress', addr);
+                    	me.preExecuteAction('stress', grid, rowIndex)
                     }
                 }, {
                     iconCls: 'icon-halt',
                     text: 'Halt',
                     tooltip: 'halt',
                     handler: function(grid, rowIndex, colIndex) {
-                        me.executeInstanceAction('halt');
+                        me.preExecuteAction('halt', grid, rowIndex)
                     }
                 }, {
                     iconCls: 'icon-ready',
                     text: 'Ready',
                     tooltip: 'ready',
                     handler: function(grid, rowIndex, colIndex) {
-                        me.executeInstanceAction('ready');
+                    	me.preExecuteAction('ready', grid, rowIndex)
                     }
                 }, {
                     iconCls: 'icon-lock',
                     text: 'Lock',
                     tooltip: 'lock',
                     handler: function(grid, rowIndex, colIndex) {
-                        me.executeInstanceAction('lock');
+                    	me.preExecuteAction('lock', grid, rowIndex)
                     }
                 }, {
                     iconCls: 'icon-unlock',
                     text: 'Unlock',
                     tooltip: 'unlock',
                     handler: function(grid, rowIndex, colIndex) {
-                        me.executeInstanceAction('unlock');
+                    	me.preExecuteAction('unlock', grid, rowIndex)
                     }
                 }, {
                     iconCls: 'icon-delete',
                     text: 'Delete',
                     tooltip: 'delete',
-                    handler: function(grid, rowIndex, colIndex) {
-                        me.executeInstanceAction('delete');
+                    handler: function(grid, rowIndex, colIndex) {                      
+                        var rec = grid.getStore().getAt(rowIndex);
+                        me.executeDeleteAction(rec.get('id'), grid.up('grid').title);
                     }
                 }]
         });
@@ -609,7 +646,7 @@ Ext.define('HydraWM.Application', {
 
         function doAjax() {
             Ext.Ajax.request({
-                url: 'http://' + me.config['hydra-server-addr'] + '/apps/' + appId + '/Instances',
+                url: 'http://' + me.config['hydra-server-addr'] + ':' + me.config['hydra-server-admin-port'] + '/apps/' + appId + '/Instances',
                 success: function(response, request) {
                     console.log(result);
                     console.log(request);
