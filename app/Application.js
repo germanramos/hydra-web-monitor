@@ -16,7 +16,7 @@ Ext.define('HydraWM.Application', {
     ],
     apps: {},
     config: {
-        'hydra-server-addr': 'localhost:3000',
+        'hydra-server-addr': 'localhost:7770',
         'topic-thunder-url': 'http://topic-beta-topicthunder0.aws-ireland.innotechapp.com/#/panel?id=bbvaes-pro',
         'probe-password': '',
         'hydra-probe-port': ''
@@ -491,17 +491,17 @@ Ext.define('HydraWM.Application', {
             model: appId + 'Model'
         });
     },
-    executeInstanceAction: function(action) {
+    executeInstanceAction: function(action, addr) {
         var me = this;
         $.ajax({
             type: "GET",
-            url: me.config['hydra-server-addr'] + "/" + action + "?password=" + me.config['probe-password'],
+            url: addr + "/" + action + "?password=" + me.config['probe-password'],
             timeout: 3000,
             success: function(data) {
-                console.log("Succesfull response " + data + " from '" + me.config['hydra-server-addr'] + "' to order '" + action + "'");
+                console.log("Succesfull response " + data + " from '" + addr + "' to order '" + action + "'");
             },
             error: function(data) {
-                console.log("Error response " + data + " from '" + me.config['hydra-server-addr'] + "' to order '" + action + "'");
+                console.log("Error response " + data + " from '" + addr + "' to order '" + action + "'");
             }
         });
 //	};
@@ -526,7 +526,12 @@ Ext.define('HydraWM.Application', {
                     text: 'Stress',
                     tooltip: 'stress',
                     handler: function(grid, rowIndex, colIndex) {
-                        me.executeInstanceAction('stress');
+                        var rec = grid.getStore().getAt(rowIndex);
+                        var extractPort = function(uri) {
+                            return uri.substring(0, uri.lastIndexOf(":"));
+                        };
+                        var addr = extractPort(rec.get('uri')) + ":" + me.config['hydra-probe-port'];
+                        me.executeInstanceAction('stress', addr);
                     }
                 }, {
                     iconCls: 'icon-halt',
