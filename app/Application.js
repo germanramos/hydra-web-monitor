@@ -14,6 +14,10 @@ Ext.define('HydraWM.Application', {
     stores: [
         // TODO: add stores here
     ],
+    GRID_PANEL_SUFFIX: "-grid",
+    TAB_PANEL_SUFFIX: "-tab",
+    appList: [],
+    Apps: [],
     apps: {},
     config: {
         'hydra-server-addr': 'localhost:7770',
@@ -26,44 +30,209 @@ Ext.define('HydraWM.Application', {
     maxAreaChartPoints: 12,
     launch: function() {
         var me = this;
-        $.ajax({
-            type: 'GET',
-            url: 'http://' + me.config['hydra-server-addr'] + '/apps',
-            contentType: "application/json",
-            success: function(apps) {
-                me.saveApps(apps);
-                me.loadUI(me.makeItems(apps));
-                me.makeDynamicComponents(apps);
-            },
-            error: function(e) {
-                console.log(e.message);
-            }
-        });
+        me.loadUI(me.makeItems());
+        me.makeNewIntervalAjaxRequest();
+//        $.ajax({
+//            type: 'GET',
+//            url: 'http://' + me.config['hydra-server-addr'] + '/apps',
+//            contentType: "application/json",
+//            success: function(apps) {
+//                me.saveApps(apps);
+//                me.makeDynamicComponents(apps);
+//            },
+//            error: function(e) {
+//                console.log(e.message);
+//            }
+//        });
     },
-    saveApps: function(apps) {
-        var finalApps = {};
-        for (i in apps) {
-            var app = apps[i];
-            for (appId in app) {
-                var appAttrs;
-                for (instanceId in app[appId].Instances) {
-                    appAttrs = app[appId].Instances[instanceId];
-                    break;
+    makeNewIntervalAjaxRequest: function() {
+        var me = this;
+
+        var advertisementRefresherTask = {
+            run: doAjax,
+            interval: 2000
+        };
+
+        Ext.TaskManager.start(advertisementRefresherTask);
+
+        function doAjax() {
+            Ext.Ajax.request({
+                url: 'http://' + me.config['hydra-server-addr'] + '/apps',
+                success: function(response, request) {
+                    var apps = Ext.decode(response.responseText);
+                    me.makeComponentsForNewApps(apps);
+//                    me.updateApps(apps);
+                    
+//                    me.saveApps(apps);
+//                    me.makeDynamicComponents(apps);
+                },
+                failure: function(e) {
+                    console.log("Ajax error");
                 }
-                var chartAttrs = this.extractChartAttributes(appAttrs);
-                finalApps[appId] = {
-                    'chartAttrs': chartAttrs,
-                    'charts': {
-                        'absolutes': {},
-                        'areas': {}
-                    },
-                    'instances': []
-                };
+            });
+        }
+    },
+    updateApps: function(apps) {
+        var me = this;
+        for (var i in apps) {
+            for (var appId in apps[i]) {
+                for (var instanceId in apps[i].Instances) {
+                    var record = {'id': instanceId};
+                    for (var key in apps[i].Instances[instanceId]) {
+                        record[key] = apps[i].Instances[instanceId][key];
+                    }
+                    records.push(record);
+                }
+                break;
             }
         }
-        this.apps = finalApps;
     },
-    makeItems: function(apps) {
+    makeComponentsForNewApps: function(apps) {
+        var me = this;
+        for (var i in apps) {
+            for (var appId in apps[i]) {
+                if ($.inArray(appId, me.appList) === -1) {
+                    var fields = me.newExtractFields(apps[i][appId].Instances);
+                    me.defineModel(appId + 'Model', me.makeModelFields(fields));
+                    var store = this.createStore(appId);
+                    Ext.getCmp('app-grids').add(me.makeNewGridPanel(appId, store, me.makeGridColumns(fields)));
+                    
+                    me.appList.push(appId);
+                }
+            }
+        }
+    },
+    newExtractFields: function(instances) {
+        var fields = ['id'];
+        for (var instanceId in instances) {
+            for (var key in instances[instanceId]) {
+                if ($.inArray(key, fields) === -1) {
+                    fields.push(key);
+                }
+            }
+        }
+        return fields;
+    },
+    makeModelFields: function(fields) {
+        var modelFields = [];
+        for (var i = 0; i < fields.length; i++) {
+            modelFields.push({
+                name: fields[i]
+            });
+        }
+        return modelFields;
+    },
+    makeGridColumns: function(fields) {
+        var me = this,
+            columns = [];
+        for (var i = 0; i < fields.length; i++) {
+            columns.push({
+                text: fields[i],
+                dataIndex: fields[i],
+                flex: 1
+            });
+        }
+        columns.push({
+            menuDisabled: true,
+            sortable: false,
+            xtype: 'actioncolumn',
+            width: 124,
+            items: [{
+                    iconCls: 'icon-stress',
+                    text: 'Stress',
+                    tooltip: 'stress',
+                    handler: function(grid, rowIndex, colIndex) {
+                        me.executeInstanceAction('stress');
+                    }
+                }, {
+                    iconCls: 'icon-halt',
+                    text: 'Halt',
+                    tooltip: 'halt',
+                    handler: function(grid, rowIndex, colIndex) {
+                        me.executeInstanceAction('halt');
+                    }
+                }, {
+                    iconCls: 'icon-ready',
+                    text: 'Ready',
+                    tooltip: 'ready',
+                    handler: function(grid, rowIndex, colIndex) {
+                        me.executeInstanceAction('ready');
+                    }
+                }, {
+                    iconCls: 'icon-lock',
+                    text: 'Lock',
+                    tooltip: 'lock',
+                    handler: function(grid, rowIndex, colIndex) {
+                        me.executeInstanceAction('lock');
+                    }
+                }, {
+                    iconCls: 'icon-unlock',
+                    text: 'Unlock',
+                    tooltip: 'unlock',
+                    handler: function(grid, rowIndex, colIndex) {
+                        me.executeInstanceAction('unlock');
+                    }
+                }, {
+                    iconCls: 'icon-delete',
+                    text: 'Delete',
+                    tooltip: 'delete',
+                    handler: function(grid, rowIndex, colIndex) {
+                        me.executeInstanceAction('delete');
+                    }
+                }]
+        });
+        return columns;
+    },
+    makeNewGridPanel: function(appId, store, columns) {
+        var me = this;
+        return Ext.create('Ext.grid.Panel', {
+            id: appId + me.GRID_PANEL_SUFFIX,
+            collapsible: true,
+            title: appId,
+            store: store,
+            multiSelect: false,
+            viewConfig: {
+                emptyText: 'No instances to display'
+            },
+            columns: columns
+        });
+    },
+    makeNewTabPanel: function(appId, attr) {
+        var me = this;
+        return Ext.create('Ext.container.Container', {
+            id: appId + '-' + attr + me.TAB_PANEL_SUFFIX,
+            title: appId + ' -> ' + attr,
+            layout: {
+                type: 'border'
+            },
+            items: [{
+                region: 'west',
+                xtype: 'container',
+                collapsible: true,
+                split: true,
+                layout: 'fit',
+                flex: 1,
+                items: [me.createAbsoluteChartPanel(appId, attr)]
+            }, {
+                region: 'center',
+                xtype: 'container',
+                layout: 'fit',
+                flex: 1,
+                items: [me.createAreaChartPanel(appId, attr)]
+            }]
+        });
+    },
+    loadUI: function(items) {
+        var me = this;
+        Ext.create('Ext.container.Viewport', {
+            id: 'viewport',
+            layout: {
+                type: 'fit'
+            },
+            items: me.makeItems(items)
+        });
+    },
+    makeItems: function() {
         var me = this;
         var items =  [{
                 xtype: 'container',
@@ -209,6 +378,39 @@ Ext.define('HydraWM.Application', {
         
         return items;
     },
+    saveApps: function(apps) {
+        var finalApps = {};
+        for (i in apps) {
+            var app = apps[i];
+            for (appId in app) {
+                var appAttrs = {};
+                for (instanceId in app[appId].Instances) {
+                    // TODO: comprobar atributos de todas las instancias
+                    appAttrs = app[appId].Instances[instanceId];
+                    break;
+                }
+                var chartAttrs = this.extractChartAttributes(appAttrs);
+                finalApps[appId] = {
+                    'chartAttrs': chartAttrs,
+                    'charts': {
+                        'absolutes': {},
+                        'areas': {}
+                    },
+                    'instances': []
+                };
+            }
+        }
+        this.apps = finalApps;
+    },
+    extractChartAttributes: function(instance) {
+        var attrs = [];
+        for (key in instance) {
+            if (!isNaN(parseInt(instance[key])) || !isNaN(parseFloat(instance[key]))) {
+                attrs.push(key);
+            }
+        }
+        return attrs;
+    },
     makeDynamicComponents: function(apps) {
         var me = this;
         for (i in apps) {
@@ -243,16 +445,7 @@ Ext.define('HydraWM.Application', {
             }
         }
     },
-    loadUI: function(items) {
-        var me = this;
-        Ext.create('Ext.container.Viewport', {
-            id: 'viewport',
-            layout: {
-                type: 'fit'
-            },
-            items: me.makeItems(items)
-        });
-    },
+    
     createChartsPanel: function(appId, attr) {
         var me = this;
         return Ext.create('Ext.container.Container', {
@@ -578,15 +771,7 @@ Ext.define('HydraWM.Application', {
             fields: fields
         });
     },
-    extractChartAttributes: function(instance) {
-        var attrs = [];
-        for (key in instance) {
-            if (!isNaN(parseInt(instance[key])) || !isNaN(parseFloat(instance[key]))) {
-                attrs.push(key);
-            }
-        }
-        return attrs;
-    },
+    
     extractFields: function(app) {
         var fields = [];
         for (key in app) {
