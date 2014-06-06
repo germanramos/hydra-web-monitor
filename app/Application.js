@@ -207,6 +207,42 @@ Ext.define('HydraWM.Application', {
         };
         this.apps[appId] = app;
     },
+    addSerieToChart: function(chart, instanceId, numberOfPoints) {
+        var serie = {
+            name: instanceId,
+            data: (function() {
+                // generate an array of random data
+                var data = [], time = (new Date()).getTime(), i;
+
+                // TODO: time - (interval * numOfPoints)
+                console.log("Time: " + time);
+                for (var i = -numberOfPoints; i <= 0; i++) {
+                    data.push([
+                        time + i * 1000,
+                        0
+                    ]);
+                }
+                return data;
+            })()
+        };
+        
+        console.log(chart);
+        chart.chart.addSeries(serie, true);
+    },
+    removeSerieFromChart: function() {
+        chart.series[i].remove();
+    },
+    checkIfSerieExists: function(series, serieName) {
+        var createSerie = true;
+        for (var k = 0; k < series.length; k++) {
+            if (series[k] !== undefined && series[k].name === serieName) {
+                createSerie = false;
+                break;
+            }
+        }
+        
+        return createSerie;
+    },
     updateUI: function() {
         var apps = this.apps;
         var first = true;
@@ -222,15 +258,29 @@ Ext.define('HydraWM.Application', {
             // Check if tabs exist
             var tabsContainer = Ext.getCmp('app-charts');
             for (var j in apps[i].chartFields) {
-                var tabPanel = Ext.getCmp(appId + "-" + apps[i].chartFields[j] + this.TAB_PANEL_SUFFIX);
+                var attr = apps[i].chartFields[j],
+                    tabPanel = Ext.getCmp(appId + "-" + attr + this.TAB_PANEL_SUFFIX);
                 if (tabPanel === undefined) {
                     // Create tabPanel
-                    tabsContainer.add(this.createChartsPanel(appId, apps[i].chartFields[j]));
-//                    console.log("Tab index: " + j + i);
+                    tabsContainer.add(this.createChartsPanel(appId, attr));
                     if (first) {
-//                        console.log("Entra");
                         tabsContainer.setActiveTab(0);
                         first = false;
+                    }
+                }
+                
+                // Check if serie exists
+                var absoluteCharts = apps[appId].charts.absolutes[attr];
+                var absoluteSeries = absoluteCharts !== undefined ? absoluteCharts.chart.series : undefined;
+                var areaCharts = apps[appId].charts.areas[attr];
+                var areaSeries = areaCharts !== undefined ? areaCharts.chart.series : undefined;
+                for (var k = 0; k < apps[appId].instances.length; k++) {
+                    var instanceId = apps[appId].instances[k];
+                    if (absoluteSeries !== undefined && this.checkIfSerieExists(absoluteSeries, instanceId)) {
+                        this.addSerieToChart(apps[appId].charts.absolutes[attr], instanceId, this.maxAbsoluteChartPoints);
+                    }
+                    if (areaSeries !== undefined && this.checkIfSerieExists(areaSeries, instanceId)) {
+                        this.addSerieToChart(apps[appId].charts.areas[attr], instanceId, this.maxAreaChartPoints);
                     }
                 }
             }
@@ -258,11 +308,12 @@ Ext.define('HydraWM.Application', {
                             var absoluteSerie = me.apps[appId].charts.absolutes[attr].chart.series[j],
                                     areaSerie = me.apps[appId].charts.areas[attr].chart.series[j];
                             var x = now,
-                                    y = parseFloat(record[attr]);
+                                y = parseFloat(record[attr]);
+                            console.log(appId + "-" + instanceId + "-" + attr + ": " + x + ", " + y);
                             absoluteSerie.addPoint([x, y], true, true);
-                            me.apps[appId].charts.absolutes[attr].data[j].push([x, y]);
+//                            me.apps[appId].charts.absolutes[attr].data[j].push([x, y]);
                             areaSerie.addPoint([x, y], true, true);
-                            me.apps[appId].charts.areas[attr].data[j].push([x, y]);
+//                            me.apps[appId].charts.areas[attr].data[j].push([x, y]);
                         }
                     }
                     records.push(record);
@@ -308,6 +359,10 @@ Ext.define('HydraWM.Application', {
     makeGridColumns: function(fields) {
         var me = this,
             columns = [];
+        columns.push({
+            width: 28,
+            tdCls: 'x-change-cell'
+        });
         for (var i = 0; i < fields.length; i++) {
             columns.push({
                 text: fields[i],
@@ -697,7 +752,7 @@ Ext.define('HydraWM.Application', {
         var data = [];
         for (var i = 0; i < me.apps[appId].instances.length; i++) {
             seriesOptions.push({
-                name: containerId + '-' + me.apps[appId].instances[i],
+                name: me.apps[appId].instances[i],
                 data: (function() {
                     // generate an array of random data
                     var data = [], time = (new Date()).getTime(), i;
@@ -799,72 +854,6 @@ Ext.define('HydraWM.Application', {
                 console.log("Error response " + data + " from '" + addr + "' to order '" + action + "'");
             }
         });
-    },
-    defineGridColumns: function(fields) {
-        var me = this,
-                columns = [];
-        for (field in fields) {
-            columns.push({
-                text: field,
-                dataIndex: field,
-                flex: 1
-            });
-        }
-        columns.push({
-            menuDisabled: true,
-            sortable: false,
-            xtype: 'actioncolumn',
-            width: 124,
-            items: [{
-                    iconCls: 'icon-stress',
-                    text: 'Stress',
-                    tooltip: 'stress',
-                    handler: function(grid, rowIndex, colIndex) {
-                        var rec = grid.getStore().getAt(rowIndex);
-                        var extractPort = function(uri) {
-                            return uri.substring(0, uri.lastIndexOf(":"));
-                        };
-                        var addr = extractPort(rec.get('uri')) + ":" + me.config['hydra-probe-port'];
-                        me.executeInstanceAction('stress', addr);
-                    }
-                }, {
-                    iconCls: 'icon-halt',
-                    text: 'Halt',
-                    tooltip: 'halt',
-                    handler: function(grid, rowIndex, colIndex) {
-                        me.executeInstanceAction('halt');
-                    }
-                }, {
-                    iconCls: 'icon-ready',
-                    text: 'Ready',
-                    tooltip: 'ready',
-                    handler: function(grid, rowIndex, colIndex) {
-                        me.executeInstanceAction('ready');
-                    }
-                }, {
-                    iconCls: 'icon-lock',
-                    text: 'Lock',
-                    tooltip: 'lock',
-                    handler: function(grid, rowIndex, colIndex) {
-                        me.executeInstanceAction('lock');
-                    }
-                }, {
-                    iconCls: 'icon-unlock',
-                    text: 'Unlock',
-                    tooltip: 'unlock',
-                    handler: function(grid, rowIndex, colIndex) {
-                        me.executeInstanceAction('unlock');
-                    }
-                }, {
-                    iconCls: 'icon-delete',
-                    text: 'Delete',
-                    tooltip: 'delete',
-                    handler: function(grid, rowIndex, colIndex) {
-                        me.executeInstanceAction('delete');
-                    }
-                }]
-        });
-        return columns;
     },
     defineModel: function(appId, fields) {
         var me = this;
