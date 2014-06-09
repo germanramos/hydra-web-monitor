@@ -40,6 +40,19 @@ Ext.define('HydraWM.Application', {
         // TODO: add stores here
     ],
     
+//    COLORS: ["#094FA4", "#416115", "#5F030B"],
+//    LUMINANCES: [0, 0.8, 0.2, 0.6, 0.4],
+    COLORS: [
+        ["#B5E5F9", "", "", "", "", "", "#094FA4"], // blue 
+        ["#C8F77D", "", "", "", "", "", "#416115"], // green
+        ["#F55063", "", "", "", "", "", "#5F030B"]  // red
+    ],
+    LUMINANCES: [2, 6, 3, 5, 4, 1, 7],
+//    LUMINANCES: [0, 0.7, 0.2, 0.6, 0.3, 0.5, 0.4],
+    
+    colorAttr: "cloud",
+    lastColorIndex: {},
+    
     GRID_PANEL_SUFFIX: "-grid",
     TAB_PANEL_SUFFIX: "-tab",
     MODEL_SUFFIX: "Model",
@@ -149,7 +162,7 @@ Ext.define('HydraWM.Application', {
                     this.apps[appId].fields = fields;
                     this.apps[appId].oldChartFields = this.apps[appId].chartFields;
                     this.apps[appId].chartFields = chartFields;
-                    this.apps[appId].instances = this.newExtractChartFields(apps[i][appId].Instances);
+//                    this.apps[appId].instances = this.newExtractChartFields(apps[i][appId].Instances);
                     if (!this.areFieldsEqual(this.apps[appId])) {
                         // Remove grid
                         var grid = Ext.getCmp(appId + this.GRID_PANEL_SUFFIX);
@@ -174,16 +187,21 @@ Ext.define('HydraWM.Application', {
         var me = this;
         for (i in apps) {
             var app = apps[i];
-            for (appId in app) {
+            for (var appId in app) {
                 var instance = {};
-                var instances = [];
+                var instances = {};
                 var i = 0;
-                for (instanceId in app[appId].Instances) {
-                    if (i == 0) {
+                for (var instanceId in app[appId].Instances) {
+                    if (i === 0) {
                         instance = app[appId].Instances[instanceId];
                         instance['id'] = instanceId;
                     }
-                    instances.push(instanceId);
+                    if (instanceId in me.apps[appId].instances) {
+                        instance['color'] = me.apps[appId].instances[instanceId].color;
+                    } else {
+                        instance['color'] = me.getInstanceColor(instance, appId);
+                    }
+                    instances[instanceId] = instance;
                     i++;
                 }
                 me.apps[appId].instances = instances;
@@ -203,7 +221,7 @@ Ext.define('HydraWM.Application', {
                 'absolutes': {},
                 'areas': {}
             },
-            'instances': []
+            'instances': {}
         };
         this.apps[appId] = app;
     },
@@ -215,7 +233,7 @@ Ext.define('HydraWM.Application', {
                 var data = [], time = (new Date()).getTime(), i;
 
                 // TODO: time - (interval * numOfPoints)
-                console.log("Time: " + time);
+//                console.log("Time: " + time);
                 for (var i = -numberOfPoints; i <= 0; i++) {
                     data.push([
                         time + i * 1000,
@@ -226,7 +244,7 @@ Ext.define('HydraWM.Application', {
             })()
         };
         
-        console.log(chart);
+//        console.log(chart);
         chart.chart.addSeries(serie, true);
     },
     removeSerieFromChart: function() {
@@ -274,8 +292,9 @@ Ext.define('HydraWM.Application', {
                 var absoluteSeries = absoluteCharts !== undefined ? absoluteCharts.chart.series : undefined;
                 var areaCharts = apps[appId].charts.areas[attr];
                 var areaSeries = areaCharts !== undefined ? areaCharts.chart.series : undefined;
-                for (var k = 0; k < apps[appId].instances.length; k++) {
-                    var instanceId = apps[appId].instances[k];
+//                for (var k = 0; k < apps[appId].instances.length; k++) {
+                for (var instanceId in apps[appId].instances) {
+//                    var instanceId = apps[appId].instances[k].id;
                     if (absoluteSeries !== undefined && this.checkIfSerieExists(absoluteSeries, instanceId)) {
                         this.addSerieToChart(apps[appId].charts.absolutes[attr], instanceId, this.maxAbsoluteChartPoints);
                     }
@@ -422,6 +441,75 @@ Ext.define('HydraWM.Application', {
         });
         return columns;
     },
+//    makeLuminanceColor: function(hex, lum) {
+//
+//	// validate hex string
+//	hex = String(hex).replace(/[^0-9a-f]/gi, '');
+//	if (hex.length < 6) {
+//		hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+//	}
+//	lum = lum || 0;
+//
+//	// convert to decimal and change luminosity
+//	var rgb = "#", c, i;
+//	for (i = 0; i < 3; i++) {
+//		c = parseInt(hex.substr(i*2,2), 16);
+//		c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16);
+//		rgb += ("00"+c).substr(c.length);
+//	}
+//
+//	return rgb;
+//    },
+    getNextColor: function() {
+        var nextColorIndex = 0,
+//            numOfColors = this.lastColorIndex.length;
+            numOfColors = Object.keys(this.lastColorIndex).length;
+    
+        if (numOfColors < this.COLORS.length) {
+            nextColorIndex = numOfColors;
+        } else {
+            nextColorIndex = numOfColors % this.COLORS.length;
+        }
+        
+        console.log("nextColorIndex: " + nextColorIndex);
+        return nextColorIndex;
+    },
+    getNextLuminance: function(lastIndex) {
+        var luminanceIndex = 0;
+        
+        if (lastIndex < this.LUMINANCES.length - 1) {
+            luminanceIndex = lastIndex + 1;
+        }
+        
+        return luminanceIndex;
+    },
+    getInstanceColor: function(instance, appId) {
+        var color = {
+            'colorIndex': "",
+            'luminanceIndex': ""
+        };
+        if (appId in this.lastColorIndex) {
+            var nextLuminanceIndex = this.getNextLuminance(this.lastColorIndex[appId].luminanceIndex);
+//            color = makeLuminanceColor(this.lastColorIndex[appId].colorIndex, nextLuminanceIndex);
+            color.colorIndex = this.lastColorIndex[appId].colorIndex;
+            color.luminanceIndex = nextLuminanceIndex;
+            this.lastColorIndex[appId].luminanceIndex = nextLuminanceIndex;
+        } else {
+            var colorIndex = this.getNextColor();
+            console.log("colorIndex: " + colorIndex);
+            color.colorIndex = colorIndex;
+            color.luminanceIndex = 0;
+//            color = makeLuminanceColor(this.COLOR[colorIndex], 0);
+            this.lastColorIndex[appId] = {
+                'luminanceIndex': 0,
+                'colorIndex': colorIndex
+            };
+        }
+        return color;
+    },
+    getCellColorClass: function() {
+        
+    },
     makeNewGridPanel: function(appId, store, columns) {
         var me = this;
         return Ext.create('Ext.grid.Panel', {
@@ -431,7 +519,21 @@ Ext.define('HydraWM.Application', {
             store: store,
             multiSelect: false,
             viewConfig: {
-                emptyText: 'No instances to display'
+                emptyText: 'No instances to display',
+                getRowClass: function(record, index) {
+                    var instanceId = record.get('id');
+                    console.log("color-" + me.apps[appId].instances[instanceId].color.colorIndex + "-" + me.LUMINANCES[me.apps[appId].instances[instanceId].color.luminanceIndex]);
+                    return "color-" + me.apps[appId].instances[instanceId].color.colorIndex + "-" + me.LUMINANCES[me.apps[appId].instances[instanceId].color.luminanceIndex];
+                    
+//                    var c = record.get('cloud');
+//                    if (c === "amazon") {
+//                        return 'amazon-color';
+//                    } else if (c === "azure") {
+//                        return 'azure-color';
+//                    } else {
+//                        return 'google-color';
+//                    }
+                }
             },
             columns: columns
         });
@@ -687,14 +789,22 @@ Ext.define('HydraWM.Application', {
             data = data.concat(me.apps[appId].charts.absolutes[attr].data[index]);
             return data;
         };
-        for (var i = 0; i < me.apps[appId].instances.length; i++) {
+        console.log("---Instances---");
+        console.log(me.apps[appId].instances);
+//        for (var i = 0; i < me.apps[appId].instances.length; i++) {
+        var i = 0;
+        for (var instanceId in me.apps[appId].instances) {
             var dataSerie = generateInitialData(i);
             seriesOptions.push({
-                name: me.apps[appId].instances[i],
+//                name: me.apps[appId].instances[i],
+//                name: me.apps[appId].instances[i].id,
+                name: instanceId,
+                color: me.COLORS[me.apps[appId].instances[instanceId].color.colorIndex][me.apps[appId].instances[instanceId].color.luminanceIndex],
                 data: dataSerie
 //                data: generateInitialData(i)
             });
             data.push(dataSerie);
+            i++;
         }
 
         $(function() {
@@ -747,12 +857,22 @@ Ext.define('HydraWM.Application', {
     },
     createAbsolutesChart: function(prefix, appId, attr) {
         var me = this;
-        var containerId = '#' + prefix + '-' + appId + '-' + attr;
+//        var containerId = '#' + prefix + '-' + appId + '-' + attr;
         var seriesOptions = [];
         var data = [];
-        for (var i = 0; i < me.apps[appId].instances.length; i++) {
+//        for (var i = 0; i < me.apps[appId].instances.length; i++) {
+        console.log(me.COLORS);
+//        console.log("colorIndex" + me.apps[appId].instances[instanceId].color.colorIndex);
+//        console.log("luminanceIndex" + me.apps[appId].instances[instanceId].color.luminanceIndex);
+        for (var instanceId in me.apps[appId].instances) {
+            console.log("colorIndex" + me.apps[appId].instances[instanceId].color.colorIndex);
+            console.log("luminanceIndex" + me.apps[appId].instances[instanceId].color.luminanceIndex);
+            console.log("color serie: " + me.COLORS[me.apps[appId].instances[instanceId].color.colorIndex][me.apps[appId].instances[instanceId].color.luminanceIndex]);
             seriesOptions.push({
-                name: me.apps[appId].instances[i],
+//                name: me.apps[appId].instances[i],
+//                name: me.apps[appId].instances[i].id,
+                name: instanceId,
+                color: me.COLORS[me.apps[appId].instances[instanceId].color.colorIndex][me.apps[appId].instances[instanceId].color.luminanceIndex],
                 data: (function() {
                     // generate an array of random data
                     var data = [], time = (new Date()).getTime(), i;

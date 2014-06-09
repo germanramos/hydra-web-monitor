@@ -36,9 +36,38 @@
     background-color: #000;
 }
 
-.red-1 .x-change-cell {
-    background-color: #FFB0C4;
+.amazon-color .x-change-cell {
+    background-color: #B5E5F9;
 }
-.green-1 .x-change-cell {
-    background-color: #B0FFC5;
+
+.azure-color .x-change-cell {
+    background-color: #C8F77D;
+}
+
+.google-color .x-change-cell {
+    background-color: #F55063;
+}
+
+.color-0-0 .x-change-cell {
+    background-color: #B5E5F9;
+}
+
+.color-0-6 .x-change-cell {
+    background-color: #094FA4;
+}
+
+.color-1-0 .x-change-cell {
+    background-color: #C8F77D;
+}
+
+.color-1-6 .x-change-cell {
+    background-color: #416115;
+}
+
+.color-2-0 .x-change-cell {
+    background-color: #F55063;
+}
+
+.color-2-6 .x-change-cell {
+    background-color: #5F030B;
 }
