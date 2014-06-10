@@ -61,6 +61,7 @@ Ext.define('HydraWM.Application', {
     apps: {},
     config: {
         'hydra-server-addr': 'localhost:7770',
+//        'hydra-server-addr': 'localhost:3000',
         'topic-thunder-url': 'http://topic-beta-topicthunder0.aws-ireland.innotechapp.com/#/panel?id=bbvaes-pro',
         'probe-password': '',
         'hydra-probe-port': ''
@@ -521,6 +522,14 @@ Ext.define('HydraWM.Application', {
             viewConfig: {
                 emptyText: 'No instances to display',
                 getRowClass: function(record, index) {
+                    // Red line
+                    var state = record.get('state');
+//                    state = "1.00";
+                    if (state !== undefined && state !== "0.00") {
+                        return "redline";
+                    }
+                    
+                    
                     var instanceId = record.get('id');
                     console.log("color-" + me.apps[appId].instances[instanceId].color.colorIndex + "-" + me.LUMINANCES[me.apps[appId].instances[instanceId].color.luminanceIndex]);
                     return "color-" + me.apps[appId].instances[instanceId].color.colorIndex + "-" + me.LUMINANCES[me.apps[appId].instances[instanceId].color.luminanceIndex];
