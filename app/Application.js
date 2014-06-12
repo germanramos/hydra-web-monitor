@@ -44,12 +44,18 @@ Ext.define('HydraWM.Application', {
     
 //    COLORS: ["#094FA4", "#416115", "#5F030B"],
 //    LUMINANCES: [0, 0.8, 0.2, 0.6, 0.4],
+//    COLORS: [
+//        ["#B5E5F9", "#B5E5F9", "#B5E5F9", "#094FA4", "#094FA4", "#094FA4", "#094FA4"], // blue 
+//        ["#C8F77D", "#C8F77D", "#C8F77D", "#416115", "#416115", "#416115", "#416115"], // green
+//        ["#F55063", "#F55063", "#F55063", "#5F030B", "#5F030B", "#5F030B", "#5F030B"]  // red
+//    ],
     COLORS: [
-        ["#B5E5F9", "#B5E5F9", "#B5E5F9", "#094FA4", "#094FA4", "#094FA4", "#094FA4"], // blue 
-        ["#C8F77D", "#C8F77D", "#C8F77D", "#416115", "#416115", "#416115", "#416115"], // green
-        ["#F55063", "#F55063", "#F55063", "#5F030B", "#5F030B", "#5F030B", "#5F030B"]  // red
+        ["#0f7fff", "#0d6fe0", "#0c64c9", "#0a59b2", "#0950a0", "#08478e", "#073e7c"], // blue 
+        ["#acff38", "#9eea33", "#8ed32e", "#7fbc29", "#6fa524", "#639320", "#567f1c"], // green
+        ["#ff0a1e", "#e5091b", "#c90818", "#a30613", "#8c0510", "#75040e", "#5F030B"]  // red
     ],
-    LUMINANCES: [2, 6, 3, 5, 4, 1, 7],
+    LUMINANCES: [1, 5, 2, 4, 3, 0, 6],
+//    LUMINANCES: [2, 6, 3, 5, 4, 1, 7],
 //    LUMINANCES: [0, 0.7, 0.2, 0.6, 0.3, 0.5, 0.4],
     
     colorAttr: "cloud",
@@ -88,7 +94,7 @@ Ext.define('HydraWM.Application', {
         });
     },
     makeNewIntervalAjaxRequest: function() {
-        console.log(">>> makeNewIntervalAjaxRequest");
+//        console.log(">>> makeNewIntervalAjaxRequest");
         var me = this;
 
         var advertisementRefresherTask = {
@@ -116,7 +122,7 @@ Ext.define('HydraWM.Application', {
         }
     },
     deleteApps: function(apps) {
-        console.log(">>> deleteApps");
+//        console.log(">>> deleteApps");
         var appsArray = [];
         for (var i = 0; i < apps.length; i++) {
             for (var appId in apps[i]) {
@@ -130,7 +136,7 @@ Ext.define('HydraWM.Application', {
         }
     },
     deleteApp: function(appId) {
-        console.log(">>> deleteApp");
+//        console.log(">>> deleteApp");
         // Remove grid
         var grid = Ext.getCmp(appId + this.GRID_PANEL_SUFFIX);
         grid.destroy();
@@ -151,7 +157,7 @@ Ext.define('HydraWM.Application', {
         delete this.apps[appId];
     },
     removeOldTabs: function(appId) {
-        console.log(">>> removeOldTabs");
+//        console.log(">>> removeOldTabs");
         for (var i = 0; i < this.apps[appId].oldChartFields.length; i++) {
             if ($.inArray(this.apps[appId].oldChartFields[i], this.apps[appId].chartFields) === -1) {
                 Ext.getCmp(appId + "-" + this.apps[appId].oldChartFields[i] + this.TAB_PANEL_SUFFIX).destroy();
@@ -159,7 +165,7 @@ Ext.define('HydraWM.Application', {
         }
     },
     parseApps: function(apps) {
-        console.log(">>> parseApps");
+//        console.log(">>> parseApps");
         for (var i in apps) {
             for (var appId in apps[i]) {
                 var fields = this.newExtractFields(apps[i][appId].Instances);
@@ -187,13 +193,13 @@ Ext.define('HydraWM.Application', {
         }
     },
     areFieldsEqual: function(app) {
-        console.log(">>> areFieldsEqual");
+//        console.log(">>> areFieldsEqual");
         var a = app.oldFields,
             b = app.fields;
         return $(a).not(b).get().length === 0 && $(b).not(a).get().length === 0;
     },
     makeInstances: function(apps) {
-        console.log(">>> makeInstances");
+//        console.log(">>> makeInstances");
         var me = this;
         for (i in apps) {
             var app = apps[i];
@@ -202,10 +208,10 @@ Ext.define('HydraWM.Application', {
                 var instances = {};
                 var i = 0;
                 for (var instanceId in app[appId].Instances) {
-                    if (i === 0) {
+//                    if (i === 0) {
                         instance = app[appId].Instances[instanceId];
                         instance['id'] = instanceId;
-                    }
+//                    }
                     if (instanceId in me.apps[appId].instances) {
                         instance['color'] = me.apps[appId].instances[instanceId].color;
                     } else {
@@ -219,7 +225,7 @@ Ext.define('HydraWM.Application', {
         }
     },
     createApp: function(appId, fields, chartFields) {
-        console.log(">>> createApp");
+//        console.log(">>> createApp");
         this.defineModel(appId, this.makeModelFields(fields));
         this.createStore(appId);
         var app = {
@@ -238,7 +244,7 @@ Ext.define('HydraWM.Application', {
     },
     // TODO: Refactor
     addSerieToChart: function(chart, instanceId, numberOfPoints) {
-        console.log(">>> addSerieToChart");
+//        console.log(">>> addSerieToChart");
         var serie = {
             name: instanceId,
             data: (function() {
@@ -258,12 +264,13 @@ Ext.define('HydraWM.Application', {
         
         chart.chart.addSeries(serie, true);
     },
+    // TODO: Work in progress
     removeSerieFromChart: function() {
-        console.log(">>> removeSerieFromChart");
+//        console.log(">>> removeSerieFromChart");
         chart.series[i].remove();
     },
     checkIfSerieExists: function(series, serieName) {
-        console.log(">>> checkIfSerieExists");
+//        console.log(">>> checkIfSerieExists");
         var createSerie = true;
         for (var k = 0; k < series.length; k++) {
             if (series[k] !== undefined && series[k].name === serieName) {
@@ -275,7 +282,7 @@ Ext.define('HydraWM.Application', {
         return createSerie;
     },
     updateUI: function() {
-        console.log(">>> updateUI");
+//        console.log(">>> updateUI");
         var apps = this.apps;
         var first = true;
         for (var i in apps) {
@@ -318,7 +325,7 @@ Ext.define('HydraWM.Application', {
         }
     },
     updateComponents: function(apps) {
-        console.log(">>> updateComponents");
+//        console.log(">>> updateComponents");
         var me = this;
         var now = (new Date()).getTime(); // current time
         var records = [];
@@ -341,19 +348,27 @@ Ext.define('HydraWM.Application', {
                                     areaSerie = me.apps[appId].charts.areas[attr].chart.series[j];
                             var x = now,
                                 y = parseFloat(record[attr]);
+                            // Absolute Charts
                             absoluteSerie.addPoint([x, y], true, true);
 //                            me.apps[appId].charts.absolutes[attr].data[j].push([x, y]);
                             if (!(instanceId in me.apps[appId].charts.absolutes[attr].data)) {
-                                console.log("Entra en delete absolutes: " + appId + " - " + attr);
                                 me.apps[appId].charts.absolutes[attr].data[instanceId] = [];
                             }
+                            if (me.apps[appId].charts.absolutes[attr].data[instanceId].length >= me.maxAbsoluteChartPoints) {
+                                var extract = me.apps[appId].charts.absolutes[attr].data[instanceId].length - me.maxAbsoluteChartPoints + 1;
+                                me.apps[appId].charts.absolutes[attr].data[instanceId] = me.apps[appId].charts.absolutes[attr].data[instanceId].slice(extract);
+                            }
                             me.apps[appId].charts.absolutes[attr].data[instanceId].push([x, y]);
+                            // Area Charts
                             areaSerie.addPoint([x, y], true, true);
 //                            me.apps[appId].charts.areas[attr].data[j].push([x, y]);
                             if (!(instanceId in me.apps[appId].charts.areas[attr].data)) {
-                                console.log("Entra en delete areas: " + appId + " - " + attr);
                                 me.apps[appId].charts.areas[attr].data[instanceId] = [];
                             }
+                            if (me.apps[appId].charts.areas[attr].data[instanceId].length >= me.maxAreaChartPoints) {
+                                var extract = me.apps[appId].charts.areas[attr].data[instanceId].length - me.maxAreaChartPoints + 1;
+                                me.apps[appId].charts.areas[attr].data[instanceId] = me.apps[appId].charts.areas[attr].data[instanceId].slice(extract);
+                            } 
                             me.apps[appId].charts.areas[attr].data[instanceId].push([x, y]);
                         }
                     }
@@ -366,7 +381,7 @@ Ext.define('HydraWM.Application', {
         }
     },
     newExtractFields: function(instances) {
-        console.log(">>> newExtractFields");
+//        console.log(">>> newExtractFields");
         var fields = ['id'];
         for (var instanceId in instances) {
             for (var key in instances[instanceId]) {
@@ -378,7 +393,7 @@ Ext.define('HydraWM.Application', {
         return fields;
     },
     newExtractChartFields: function(instances) {
-        console.log(">>> newExtractChartFields");
+//        console.log(">>> newExtractChartFields");
         var fields = [];
         for (var instanceId in instances) {
             for (var key in instances[instanceId]) {
@@ -391,7 +406,7 @@ Ext.define('HydraWM.Application', {
         return fields;
     },
     makeModelFields: function(fields) {
-        console.log(">>> makeModelFields");
+//        console.log(">>> makeModelFields");
         var modelFields = [];
         for (var i = 0; i < fields.length; i++) {
             modelFields.push({
@@ -401,7 +416,7 @@ Ext.define('HydraWM.Application', {
         return modelFields;
     },
     makeGridColumns: function(fields) {
-        console.log(">>> makeGridColumns");
+//        console.log(">>> makeGridColumns");
         var me = this,
             columns = [];
         columns.push({
@@ -487,7 +502,7 @@ Ext.define('HydraWM.Application', {
 //	return rgb;
 //    },
     getNextColor: function() {
-        console.log(">>> getNextColor");
+//        console.log(">>> getNextColor");
         var nextColorIndex = 0,
             numOfColors = Object.keys(this.lastColorIndex).length;
     
@@ -497,11 +512,10 @@ Ext.define('HydraWM.Application', {
             nextColorIndex = numOfColors % this.COLORS.length;
         }
         
-        console.log("nextColorIndex: " + nextColorIndex);
         return nextColorIndex;
     },
     getNextLuminance: function(lastIndex) {
-        console.log(">>> getNextLuminance");
+//        console.log(">>> getNextLuminance");
         var luminanceIndex = 0;
         
         if (lastIndex < this.LUMINANCES.length - 1) {
@@ -511,22 +525,22 @@ Ext.define('HydraWM.Application', {
         return luminanceIndex;
     },
     getInstanceColor: function(instance, appId) {
-        console.log(">>> getInstanceColor");
+//        console.log(">>> getInstanceColor");
         var color = {
             'colorIndex': "",
             'luminanceIndex': ""
         };
-        if (appId in this.lastColorIndex) {
-            var nextLuminanceIndex = this.getNextLuminance(this.lastColorIndex[appId].luminanceIndex);
-            color.colorIndex = this.lastColorIndex[appId].colorIndex;
+        var colorAttrValue = instance[this.colorAttr];
+        if (colorAttrValue in this.lastColorIndex) {
+            var nextLuminanceIndex = this.getNextLuminance(this.lastColorIndex[colorAttrValue].luminanceIndex);
+            color.colorIndex = this.lastColorIndex[colorAttrValue].colorIndex;
             color.luminanceIndex = nextLuminanceIndex;
-            this.lastColorIndex[appId].luminanceIndex = nextLuminanceIndex;
+            this.lastColorIndex[colorAttrValue].luminanceIndex = nextLuminanceIndex;
         } else {
             var colorIndex = this.getNextColor();
-            console.log("colorIndex: " + colorIndex);
             color.colorIndex = colorIndex;
             color.luminanceIndex = 0;
-            this.lastColorIndex[appId] = {
+            this.lastColorIndex[colorAttrValue] = {
                 'luminanceIndex': 0,
                 'colorIndex': colorIndex
             };
@@ -537,7 +551,7 @@ Ext.define('HydraWM.Application', {
         
     },
     makeNewGridPanel: function(appId, store, columns) {
-        console.log(">>> makeNewGridPanel");
+//        console.log(">>> makeNewGridPanel");
         var me = this;
         return Ext.create('Ext.grid.Panel', {
             id: appId + me.GRID_PANEL_SUFFIX,
@@ -562,7 +576,7 @@ Ext.define('HydraWM.Application', {
         });
     },
     makeNewTabPanel: function(appId, attr) {
-        console.log(">>> makeNewTabPanel");
+//        console.log(">>> makeNewTabPanel");
         var me = this;
         return Ext.create('Ext.container.Container', {
             id: appId + '-' + attr + me.TAB_PANEL_SUFFIX,
@@ -588,7 +602,7 @@ Ext.define('HydraWM.Application', {
         });
     },
     makeItems: function() {
-        console.log(">>> makeItems");
+//        console.log(">>> makeItems");
         var me = this;
         var items =  [{
                 xtype: 'container',
@@ -735,7 +749,7 @@ Ext.define('HydraWM.Application', {
         return items;
     },
     extractChartAttributes: function(instance) {
-        console.log(">>> extractChartAttributes");
+//        console.log(">>> extractChartAttributes");
         var attrs = [];
         for (key in instance) {
             if (!isNaN(parseInt(instance[key])) || !isNaN(parseFloat(instance[key]))) {
@@ -745,7 +759,7 @@ Ext.define('HydraWM.Application', {
         return attrs;
     },
     createChartsPanel: function(appId, attr) {
-        console.log(">>> createChartsPanel");
+//        console.log(">>> createChartsPanel");
         var me = this;
         return Ext.create('Ext.container.Container', {
             id: appId + '-' + attr + me.TAB_PANEL_SUFFIX,
@@ -771,7 +785,7 @@ Ext.define('HydraWM.Application', {
         });
     },
     createAbsoluteChartPanel: function(appId, attr) {
-        console.log(">>> createAbsoluteChartPanel");
+//        console.log(">>> createAbsoluteChartPanel");
         var me = this,
             prefix = 'absolute';
         return Ext.create('Ext.panel.Panel', {
@@ -781,14 +795,12 @@ Ext.define('HydraWM.Application', {
             header: false,
             loaded: false,
             onResize: function() {
-                console.log("Start onResize");
                 me.createAbsolutesChart(prefix, appId, attr);
-                console.log("End onResize");
             }
         });
     },
     createAreaChartPanel: function(appId, attr) {
-        console.log(">>> createAreaChartPanel");
+//        console.log(">>> createAreaChartPanel");
         var me = this,
             prefix = 'area';
         return Ext.create('Ext.panel.Panel', {
@@ -803,35 +815,40 @@ Ext.define('HydraWM.Application', {
         });
     },
     createAreaChart: function(prefix, appId, attr) {
-        console.log(">>> createAreaChart");
+//        console.log(">>> createAreaChart");
         var me = this;
-        var time = (new Date()).getTime();
 
         var seriesOptions = [];
-        var data = [];
-        var generateInitialData = function(index) {
-            var data = [];
-            for (var i = -me.maxAreaChartPoints + me.apps[appId].charts.absolutes[attr].data[index].length; i <= 0; i++) {
-//            for (var i = -12; i <= 0; i++) {
-                data.push([
-                    time + i * 1000,
-                    0
-                ]);
-            }
-            data = data.concat(me.apps[appId].charts.absolutes[attr].data[index]);
-            return data;
-        };
-        var i = 0;
+        var seriesData = {};
         for (var instanceId in me.apps[appId].instances) {
-            var dataSerie = generateInitialData(i);
             seriesOptions.push({
                 name: instanceId,
+//                color: "",
                 color: me.COLORS[me.apps[appId].instances[instanceId].color.colorIndex][me.apps[appId].instances[instanceId].color.luminanceIndex],
-//                data: dataSerie
-                data: []
+                data: (function() {
+                    var savedData = [];
+                    if (me.apps[appId].charts.areas[attr] !== undefined) {
+                        savedData = me.apps[appId].charts.areas[attr].data[instanceId];
+                    }
+                    // generate an array of random data
+                    var data = [], time = (new Date()).getTime(), i;
+
+                    var numOfFakePoints = me.maxAreaChartPoints - savedData.length;
+                    for (i = -numOfFakePoints; i <= 0; i++) {
+                        if (savedData.length > 0) {
+                            time = savedData[0][0];
+                        }
+                        data.push([
+                            time + i * me.REQUEST_INTERVAL,
+//                            Math.round(Math.random() * 100)
+                            0
+                        ]);
+                    }
+                    data = data.concat(savedData);
+                    seriesData[instanceId] = data;
+                    return data;
+                })()
             });
-            data.push(dataSerie);
-            i++;
         }
 
         $(function() {
@@ -876,24 +893,22 @@ Ext.define('HydraWM.Application', {
                     },
                     series: seriesOptions
                 }),
-                'data': data
+                'data': seriesData
             };
             me.apps[appId].charts.areas[attr] = chart;
         });
     },
     createAbsolutesChart: function(prefix, appId, attr) {
-        console.log(">>> createAbsolutesChart");
+//        console.log(">>> createAbsolutesChart");
         var me = this;
-        if (me.apps[appId].charts.absolutes[attr] !== undefined) {
-            console.log(me.apps[appId].charts.absolutes[attr].data);
-        }
+
         var seriesOptions = [];
-        var data = [];
+        var seriesData = {};
         for (var instanceId in me.apps[appId].instances) {
             seriesOptions.push({
                 name: instanceId,
-                color: "",
-//                color: me.COLORS[me.apps[appId].instances[instanceId].color.colorIndex][me.apps[appId].instances[instanceId].color.luminanceIndex],
+//                color: "",
+                color: me.COLORS[me.apps[appId].instances[instanceId].color.colorIndex][me.apps[appId].instances[instanceId].color.luminanceIndex],
 //                data: (function() {
 //                    // generate an array of random data
 //                    var data = [], time = (new Date()).getTime(), i;
@@ -927,10 +942,10 @@ Ext.define('HydraWM.Application', {
                         ]);
                     }
                     data = data.concat(savedData);
+                    seriesData[instanceId] = data;
                     return data;
                 })()
             });
-            data.push([]);
         }
 
         $(function() {
@@ -979,14 +994,10 @@ Ext.define('HydraWM.Application', {
                     },
                     series: seriesOptions
                 }),
-                'data': data
+                'data': seriesData
             };
             me.apps[appId].charts.absolutes[attr] = chart;
         });
-        
-//        if (me.apps[appId].charts.absolutes[attr] !== undefined) {
-//            console.log(me.apps[appId].charts.areas[attr].data);
-//        }
     },
 //    createChartsHeaderMenuItems: function(apps) {
 //        var items = [];
@@ -1002,7 +1013,7 @@ Ext.define('HydraWM.Application', {
 //        return items;
 //    },
     createStore: function(appId) {
-        console.log(">>> createStore");
+//        console.log(">>> createStore");
         var me = this;
         return Ext.create('Ext.data.Store', {
             storeId: appId + me.STORE_SUFFIX,
@@ -1010,7 +1021,7 @@ Ext.define('HydraWM.Application', {
         });
     },
     executeInstanceAction: function(action, addr) {
-        console.log(">>> executeInstanceAction");
+//        console.log(">>> executeInstanceAction");
         var me = this;
         $.ajax({
             type: "GET",
@@ -1025,7 +1036,7 @@ Ext.define('HydraWM.Application', {
         });
     },
     defineModel: function(appId, fields) {
-        console.log(">>> defineModel");
+//        console.log(">>> defineModel");
         var me = this;
         Ext.define(appId + me.MODEL_SUFFIX, {
             extend: 'Ext.data.Model',

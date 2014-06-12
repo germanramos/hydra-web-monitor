@@ -49,30 +49,112 @@
 }
 
 /* Blue Colors */
-.color-0-0 .x-change-cell {
+/*.color-0-0 .x-change-cell {
     background-color: #B5E5F9 !important;
 }
 
 .color-0-6 .x-change-cell {
     background-color: #094FA4 !important;
+}*/
+.color-0-0 .x-change-cell {
+    background-color: #0f7fff !important;
+}
+
+.color-0-1 .x-change-cell {
+    background-color: #0d6fe0 !important;
+}
+
+.color-0-2 .x-change-cell {
+    background-color: #0c64c9 !important;
+}
+
+.color-0-3 .x-change-cell {
+    background-color: #0a59b2 !important;
+}
+
+.color-0-4 .x-change-cell {
+    background-color: #0950a0 !important;
+}
+
+.color-0-5 .x-change-cell {
+    background-color: #08478e !important;
+}
+
+.color-0-6 .x-change-cell {
+    background-color: #073e7c !important;
 }
 
 /* Green Colors */
-.color-1-0 .x-change-cell {
+/*.color-1-0 .x-change-cell {
     background-color: #C8F77D !important;
 }
 
 .color-1-6 .x-change-cell {
     background-color: #416115 !important;
+}*/
+
+.color-1-0 .x-change-cell {
+    background-color: #acff38 !important;
+}
+
+.color-1-1 .x-change-cell {
+    background-color: #9eea33 !important;
+}
+
+.color-1-2 .x-change-cell {
+    background-color: #8ed32e !important;
+}
+
+.color-1-3 .x-change-cell {
+    background-color: #7fbc29 !important;
+}
+
+.color-1-4 .x-change-cell {
+    background-color: #6fa524 !important;
+}
+
+.color-1-5 .x-change-cell {
+    background-color: #639320 !important;
+}
+
+.color-1-6 .x-change-cell {
+    background-color: #567f1c !important;
 }
 
 /* Red Colors */
-.color-2-0 .x-change-cell {
+/*.color-2-0 .x-change-cell {
     background-color: #F55063 !important;
 }
 
 .color-2-6 .x-change-cell {
     background-color: #5F030B !important;
+}*/
+.color-2-0 .x-change-cell {
+    background-color: #acff38 !important;
+}
+
+.color-2-1 .x-change-cell {
+    background-color: #9eea33 !important;
+}
+
+.color-2-2 .x-change-cell {
+    background-color: #8ed32e !important;
+}
+
+.color-2-3 .x-change-cell {
+    background-color: #7fbc29 !important;
+}
+
+.color-2-4 .x-change-cell {
+    background-color: #6fa524 !important;
+}
+
+.color-2-5 .x-change-cell {
+    background-color: #639320 !important;
+}
+
+.color-2-6 .x-change-cell {
+    background-color: #567f1c !important;
 }
 
 .redline .x-grid-cell {
