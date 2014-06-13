@@ -1,15 +1,12 @@
 .icon-stress {
-    /*background-image: url(resources/images/icons/stress.png);*/
     background-image: url(resources/images/icons/stress.png);
 }
 
 .icon-halt {
-/*    background-image: url(resources/images/icons/halt.png);*/
     background-image: url(resources/images/icons/pause.png);
 }
 
 .icon-ready {
-    /*background-image: url(resources/images/icons/ready.png);*/
     background-image: url(resources/images/icons/play.png);
 }
 
@@ -36,26 +33,7 @@
     background-color: #000;
 }
 
-.amazon-color .x-change-cell {
-    background-color: #B5E5F9;
-}
-
-.azure-color .x-change-cell {
-    background-color: #C8F77D;
-}
-
-.google-color .x-change-cell {
-    background-color: #F55063;
-}
-
 /* Blue Colors */
-/*.color-0-0 .x-change-cell {
-    background-color: #B5E5F9 !important;
-}
-
-.color-0-6 .x-change-cell {
-    background-color: #094FA4 !important;
-}*/
 .color-0-0 .x-change-cell {
     background-color: #0f7fff !important;
 }
@@ -85,14 +63,6 @@
 }
 
 /* Green Colors */
-/*.color-1-0 .x-change-cell {
-    background-color: #C8F77D !important;
-}
-
-.color-1-6 .x-change-cell {
-    background-color: #416115 !important;
-}*/
-
 .color-1-0 .x-change-cell {
     background-color: #acff38 !important;
 }
@@ -122,13 +92,6 @@
 }
 
 /* Red Colors */
-/*.color-2-0 .x-change-cell {
-    background-color: #F55063 !important;
-}
-
-.color-2-6 .x-change-cell {
-    background-color: #5F030B !important;
-}*/
 .color-2-0 .x-change-cell {
     background-color: #acff38 !important;
 }
@@ -157,6 +120,7 @@
     background-color: #567f1c !important;
 }
 
+/* Disabled instance */
 .redline .x-grid-cell {
     background-color: #FFE2E2;
     color: #900

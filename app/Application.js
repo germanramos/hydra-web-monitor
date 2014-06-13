@@ -1,28 +1,3 @@
-// attach the .equals method to Array's prototype to call it on any array
-//Array.prototype.equals = function (array) {
-//    // if the other array is a falsy value, return
-//    if (!array)
-//        return false;
-//
-//    // compare lengths - can save a lot of time 
-//    if (this.length != array.length)
-//        return false;
-//
-//    for (var i = 0, l=this.length; i < l; i++) {
-//        // Check if we have nested arrays
-//        if (this[i] instanceof Array && array[i] instanceof Array) {
-//            // recurse into the nested arrays
-//            if (!this[i].equals(array[i]))
-//                return false;       
-//        }           
-//        else if (this[i] != array[i]) { 
-//            // Warning - two different object instances will never be equal: {x:20} != {x:20}
-//            return false;   
-//        }           
-//    }       
-//    return true;
-//} 
-
 Ext.define('HydraWM.Application', {
     requires: [
         'Ext.data.JsonP',
@@ -42,21 +17,12 @@ Ext.define('HydraWM.Application', {
     
     REQUEST_INTERVAL: 2000,
     
-//    COLORS: ["#094FA4", "#416115", "#5F030B"],
-//    LUMINANCES: [0, 0.8, 0.2, 0.6, 0.4],
-//    COLORS: [
-//        ["#B5E5F9", "#B5E5F9", "#B5E5F9", "#094FA4", "#094FA4", "#094FA4", "#094FA4"], // blue 
-//        ["#C8F77D", "#C8F77D", "#C8F77D", "#416115", "#416115", "#416115", "#416115"], // green
-//        ["#F55063", "#F55063", "#F55063", "#5F030B", "#5F030B", "#5F030B", "#5F030B"]  // red
-//    ],
     COLORS: [
         ["#0f7fff", "#0d6fe0", "#0c64c9", "#0a59b2", "#0950a0", "#08478e", "#073e7c"], // blue 
         ["#acff38", "#9eea33", "#8ed32e", "#7fbc29", "#6fa524", "#639320", "#567f1c"], // green
         ["#ff0a1e", "#e5091b", "#c90818", "#a30613", "#8c0510", "#75040e", "#5F030B"]  // red
     ],
     LUMINANCES: [1, 5, 2, 4, 3, 0, 6],
-//    LUMINANCES: [2, 6, 3, 5, 4, 1, 7],
-//    LUMINANCES: [0, 0.7, 0.2, 0.6, 0.3, 0.5, 0.4],
     
     colorAttr: "cloud",
     lastColorIndex: {},
@@ -821,7 +787,6 @@ Ext.define('HydraWM.Application', {
         for (var instanceId in me.apps[appId].instances) {
             seriesOptions.push({
                 name: instanceId,
-//                color: "",
                 color: me.COLORS[me.apps[appId].instances[instanceId].color.colorIndex][me.apps[appId].instances[instanceId].color.luminanceIndex],
                 data: (function() {
                     var savedData = [];
@@ -905,21 +870,7 @@ Ext.define('HydraWM.Application', {
         for (var instanceId in me.apps[appId].instances) {
             seriesOptions.push({
                 name: instanceId,
-//                color: "",
                 color: me.COLORS[me.apps[appId].instances[instanceId].color.colorIndex][me.apps[appId].instances[instanceId].color.luminanceIndex],
-//                data: (function() {
-//                    // generate an array of random data
-//                    var data = [], time = (new Date()).getTime(), i;
-//
-//                    for (i = -me.maxAbsoluteChartPoints; i <= 0; i++) {
-//                        data.push([
-//                            time + i * 1000,
-////                            Math.round(Math.random() * 100)
-//                            0
-//                        ]);
-//                    }
-//                    return data;
-//                })()
                 data: (function() {
                     var savedData = [];
                     if (me.apps[appId].charts.absolutes[attr] !== undefined) {
