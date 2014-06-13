@@ -1,15 +1,12 @@
 .icon-stress {
     background-image: url(resources/images/icons/stress.png);
-    /*background-image: url(resources/images/icons/thunder.png);*/
 }
 
 .icon-halt {
-/*    background-image: url(resources/images/icons/halt.png);*/
     background-image: url(resources/images/icons/pause.png);
 }
 
 .icon-ready {
-    /*background-image: url(resources/images/icons/ready.png);*/
     background-image: url(resources/images/icons/play.png);
 }
 
@@ -30,4 +27,101 @@
     width: 16px;
     cursor: pointer;
     margin-right: 4px;
+}
+
+.x-change-cell {
+    background-color: #000;
+}
+
+/* Blue Colors */
+.color-0-0 .x-change-cell {
+    background-color: #0f7fff !important;
+}
+
+.color-0-1 .x-change-cell {
+    background-color: #0d6fe0 !important;
+}
+
+.color-0-2 .x-change-cell {
+    background-color: #0c64c9 !important;
+}
+
+.color-0-3 .x-change-cell {
+    background-color: #0a59b2 !important;
+}
+
+.color-0-4 .x-change-cell {
+    background-color: #0950a0 !important;
+}
+
+.color-0-5 .x-change-cell {
+    background-color: #08478e !important;
+}
+
+.color-0-6 .x-change-cell {
+    background-color: #073e7c !important;
+}
+
+/* Green Colors */
+.color-1-0 .x-change-cell {
+    background-color: #acff38 !important;
+}
+
+.color-1-1 .x-change-cell {
+    background-color: #9eea33 !important;
+}
+
+.color-1-2 .x-change-cell {
+    background-color: #8ed32e !important;
+}
+
+.color-1-3 .x-change-cell {
+    background-color: #7fbc29 !important;
+}
+
+.color-1-4 .x-change-cell {
+    background-color: #6fa524 !important;
+}
+
+.color-1-5 .x-change-cell {
+    background-color: #639320 !important;
+}
+
+.color-1-6 .x-change-cell {
+    background-color: #567f1c !important;
+}
+
+/* Red Colors */
+.color-2-0 .x-change-cell {
+    background-color: #ff0a1e !important;
+}
+
+.color-2-1 .x-change-cell {
+    background-color: #e5091b !important;
+}
+
+.color-2-2 .x-change-cell {
+    background-color: #c90818 !important;
+}
+
+.color-2-3 .x-change-cell {
+    background-color: #a30613 !important;
+}
+
+.color-2-4 .x-change-cell {
+    background-color: #8c0510 !important;
+}
+
+.color-2-5 .x-change-cell {
+    background-color: #75040e !important;
+}
+
+.color-2-6 .x-change-cell {
+    background-color: #5F030B !important;
+}
+
+/* Disabled instance */
+.redline .x-grid-cell {
+    background-color: #FFE2E2;
+    color: #900
 }
