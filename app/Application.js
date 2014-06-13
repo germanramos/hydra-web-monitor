@@ -74,7 +74,7 @@ Ext.define('HydraWM.Application', {
 
         function doAjax() {
             Ext.Ajax.request({
-                url: 'http://' + me.config['hydra-server-addr'] + '/apps',
+                url: 'http://' + me.config['hydra-server-addr'] + ':' + me.config['hydra-server-admin-port'] + '/apps',
                 success: function(response, request) {
                     var apps = Ext.decode(response.responseText);
                     me.deleteApps(apps);
