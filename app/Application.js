@@ -329,11 +329,11 @@ Ext.define('HydraWM.Application', {
         var me = this;
         var now = (new Date()).getTime(); // current time
         var records = [];
-        var j = 0;
         for (var i = 0; i < apps.length; i++) {
             for (var appId in apps[i]) {
                 var store = Ext.data.StoreManager.get(appId + me.STORE_SUFFIX);
                 var records = [];
+                var j = 0;
                 for (var instanceId in apps[i][appId].Instances) {
                     // Grids
                     var record = {'id': instanceId};
@@ -350,7 +350,6 @@ Ext.define('HydraWM.Application', {
                                 y = parseFloat(record[attr]);
                             // Absolute Charts
                             absoluteSerie.addPoint([x, y], true, true);
-//                            me.apps[appId].charts.absolutes[attr].data[j].push([x, y]);
                             if (!(instanceId in me.apps[appId].charts.absolutes[attr].data)) {
                                 me.apps[appId].charts.absolutes[attr].data[instanceId] = [];
                             }
@@ -361,7 +360,6 @@ Ext.define('HydraWM.Application', {
                             me.apps[appId].charts.absolutes[attr].data[instanceId].push([x, y]);
                             // Area Charts
                             areaSerie.addPoint([x, y], true, true);
-//                            me.apps[appId].charts.areas[attr].data[j].push([x, y]);
                             if (!(instanceId in me.apps[appId].charts.areas[attr].data)) {
                                 me.apps[appId].charts.areas[attr].data[instanceId] = [];
                             }
