@@ -405,42 +405,43 @@ Ext.define('HydraWM.Application', {
                     text: 'Stress',
                     tooltip: 'stress',
                     handler: function(grid, rowIndex, colIndex) {
-                        me.executeInstanceAction('stress');
+                        me.preExecuteAction('stress', grid, rowIndex);
                     }
                 }, {
                     iconCls: 'icon-halt',
                     text: 'Halt',
                     tooltip: 'halt',
                     handler: function(grid, rowIndex, colIndex) {
-                        me.executeInstanceAction('halt');
+                        me.preExecuteAction('halt', grid, rowIndex);
                     }
                 }, {
                     iconCls: 'icon-ready',
                     text: 'Ready',
                     tooltip: 'ready',
                     handler: function(grid, rowIndex, colIndex) {
-                        me.executeInstanceAction('ready');
+                        me.preExecuteAction('ready', grid, rowIndex);
                     }
                 }, {
                     iconCls: 'icon-lock',
                     text: 'Lock',
                     tooltip: 'lock',
                     handler: function(grid, rowIndex, colIndex) {
-                        me.executeInstanceAction('lock');
+                        me.preExecuteAction('lock', grid, rowIndex);
                     }
                 }, {
                     iconCls: 'icon-unlock',
                     text: 'Unlock',
                     tooltip: 'unlock',
                     handler: function(grid, rowIndex, colIndex) {
-                        me.executeInstanceAction('unlock');
+                        me.preExecuteAction('unlock', grid, rowIndex);
                     }
                 }, {
                     iconCls: 'icon-delete',
                     text: 'Delete',
                     tooltip: 'delete',
                     handler: function(grid, rowIndex, colIndex) {
-                        me.executeInstanceAction('delete');
+                        var rec = grid.getStore().getAt(rowIndex);
+                        me.executeDeleteAction(rec.get('id'), grid.up('grid').title);
                     }
                 }]
         });
@@ -622,7 +623,21 @@ Ext.define('HydraWM.Application', {
                                                             name: 'hydra-server-addr',
                                                             allowBlank: false,
                                                             tooltip: 'Enter your hydra server address'
-                                                        }, {
+                                                        },  {
+                                                            fieldLabel: 'Hydra Server Admin Port',
+                                                            afterLabelTextTpl: required,
+                                                            id: 'hydra-server-admin-port',
+                                                            name: 'hydra-server-admin-port',
+                                                            allowBlank: false,
+                                                            tooltip: 'Enter your hydra server admin port'
+                                                        },  {
+                                                            fieldLabel: 'Hydra Server Etcd Port',
+                                                            afterLabelTextTpl: required,
+                                                            id: 'hydra-server-etcd-port',
+                                                            name: 'hydra-server-etcd-port',
+                                                            allowBlank: false,
+                                                            tooltip: 'Enter your hydra server etcd port'
+                                                        },  {
                                                             fieldLabel: 'Topic Thunder',
                                                             afterLabelTextTpl: required,
                                                             id: 'topic-thunder-url',
@@ -970,7 +985,6 @@ Ext.define('HydraWM.Application', {
         });
     },
     executeInstanceAction: function(action, addr) {
-//        console.log(">>> executeInstanceAction");
         var me = this;
         $.ajax({
             type: "GET",
@@ -984,6 +998,45 @@ Ext.define('HydraWM.Application', {
             }
         });
     },
+    preExecuteAction: function(action, grid, rowIndex) {
+    	var me = this;
+    	var rec = grid.getStore().getAt(rowIndex);
+        var extractPort = function(uri) {
+            return uri.substring(0, uri.lastIndexOf(":"));
+        };
+        var addr = extractPort(rec.get('uri')) + ":" + me.config['hydra-probe-port'];
+        me.executeInstanceAction(action, addr);
+    },
+    executeDeleteAction: function(instance, app) {
+    	var me = this;
+    	addr = 'http://' + me.config['hydra-server-addr'] + ':' + me.config['hydra-server-etcd-port'] + '/v2/keys/db/apps/Instances/' + app + '/' + instance + '?recursive=true'; 
+    	$.ajax({
+            type: "DELETE",
+            url: addr,
+            timeout: 3000,
+            success: function(data) {
+                console.log("Succesfull response " + data + " from '" + addr + "' to order delete'");
+            },
+            error: function(data) {
+                console.log("Error response " + data + " from '" + addr + "' to order delete");
+            }
+        });
+    },
+//    executeInstanceAction: function(action, addr) {
+////        console.log(">>> executeInstanceAction");
+//        var me = this;
+//        $.ajax({
+//            type: "GET",
+//            url: addr + "/" + action + "?password=" + me.config['probe-password'],
+//            timeout: 3000,
+//            success: function(data) {
+//                console.log("Succesfull response " + data + " from '" + addr + "' to order '" + action + "'");
+//            },
+//            error: function(data) {
+//                console.log("Error response " + data + " from '" + addr + "' to order '" + action + "'");
+//            }
+//        });
+//    },
     defineModel: function(appId, fields) {
 //        console.log(">>> defineModel");
         var me = this;
