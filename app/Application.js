@@ -34,12 +34,14 @@ Ext.define('HydraWM.Application', {
     
     apps: {},
     config: {
-        'hydra-server-addr': 'localhost:7770',
-//        'hydra-server-addr': 'localhost:3000',
-//        'topic-thunder-url': 'http://www.as.com',
-        'topic-thunder-url': 'http://topic-beta-topicthunder0.aws-ireland.innotechapp.com/#/panel?id=bbvaes-pro',
+        'hydra-server-addr': 'hydra-v3-demo-server-0.aws-ireland.innotechapp.com',
+        'hydra-server-admin-port': '7771',
+        'hydra-server-etcd-port': '7401',
+    	'topic-thunder-url': 'http://topic-beta-topicthunder0.aws-ireland.innotechapp.com/#/panel?id=time',
+        //'topic-thunder-url': 'http://hydra-v3-demo-server-0:7401/mod/dashboard',
+        //'topic-thunder-url': '',
         'probe-password': '',
-        'hydra-probe-port': ''
+        'hydra-probe-port': '9099'
     },
     configWindow: null,
     maxAbsoluteChartPoints: 999,
@@ -642,7 +644,6 @@ Ext.define('HydraWM.Application', {
                                                             afterLabelTextTpl: required,
                                                             id: 'topic-thunder-url',
                                                             name: 'topic-thunder-url',
-                                                            vtype: 'url',
                                                             allowBlank: false,
                                                             tooltip: 'Enter your topic thunder address'
                                                         }, {
