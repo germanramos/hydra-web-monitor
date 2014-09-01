@@ -1,9 +1,11 @@
 Ext.define('HydraWM.Application', {
+    name: 'HydraWM',
     requires: [
         'Ext.data.JsonP',
-        'Ext.ux.TabScrollerMenu'
+        'Ext.ux.TabScrollerMenu',
+
+        'HydraWM.config.Config'
     ],
-    name: 'HydraWM',
     extend: 'Ext.app.Application',
     views: [
         // TODO: add views here
@@ -33,16 +35,6 @@ Ext.define('HydraWM.Application', {
     STORE_SUFFIX: "Store",
     
     apps: {},
-    config: {
-        'hydra-server-addr': 'hydra-v3-demo-server-0.aws-ireland.innotechapp.com',
-        'hydra-server-admin-port': '7771',
-        'hydra-server-etcd-port': '7401',
-    	'topic-thunder-url': 'http://topic-beta-topicthunder0.aws-ireland.innotechapp.com/#/panel?id=time',
-        //'topic-thunder-url': 'http://hydra-v3-demo-server-0:7401/mod/dashboard',
-        //'topic-thunder-url': '',
-        'probe-password': '',
-        'hydra-probe-port': '9099'
-    },
     configWindow: null,
     maxAbsoluteChartPoints: 999,
     maxAreaChartPoints: 12,
@@ -74,7 +66,7 @@ Ext.define('HydraWM.Application', {
 
         function doAjax() {
             Ext.Ajax.request({
-                url: 'http://' + me.config['hydra-server-addr'] + ':' + me.config['hydra-server-admin-port'] + '/apps',
+                url: 'http://' + HydraWM.config.Config.config['hydraServerAddr'] + ':' + HydraWM.config.Config.config['hydraServerAdminPort'] + '/apps',
                 success: function(response, request) {
                     var apps = Ext.decode(response.responseText);
                     me.deleteApps(apps);
@@ -449,25 +441,6 @@ Ext.define('HydraWM.Application', {
         });
         return columns;
     },
-//    makeLuminanceColor: function(hex, lum) {
-//
-//	// validate hex string
-//	hex = String(hex).replace(/[^0-9a-f]/gi, '');
-//	if (hex.length < 6) {
-//		hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
-//	}
-//	lum = lum || 0;
-//
-//	// convert to decimal and change luminosity
-//	var rgb = "#", c, i;
-//	for (i = 0; i < 3; i++) {
-//		c = parseInt(hex.substr(i*2,2), 16);
-//		c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16);
-//		rgb += ("00"+c).substr(c.length);
-//	}
-//
-//	return rgb;
-//    },
     getNextColor: function() {
 //        console.log(">>> getNextColor");
         var nextColorIndex = 0,
@@ -514,9 +487,9 @@ Ext.define('HydraWM.Application', {
         }
         return color;
     },
-    getCellColorClass: function() {
+    // getCellColorClass: function() {
         
-    },
+    // },
     makeNewGridPanel: function(appId, store, columns) {
 //        console.log(">>> makeNewGridPanel");
         var me = this;
@@ -621,44 +594,44 @@ Ext.define('HydraWM.Application', {
                                                     items: [{
                                                             fieldLabel: 'Hydra Server Address',
                                                             afterLabelTextTpl: required,
-                                                            id: 'hydra-server-addr',
-                                                            name: 'hydra-server-addr',
+                                                            id: 'hydraServerAddr',
+                                                            name: 'hydraServerAddr',
                                                             allowBlank: false,
                                                             tooltip: 'Enter your hydra server address'
                                                         },  {
                                                             fieldLabel: 'Hydra Server Admin Port',
                                                             afterLabelTextTpl: required,
-                                                            id: 'hydra-server-admin-port',
-                                                            name: 'hydra-server-admin-port',
+                                                            id: 'hydraServerAdminPort',
+                                                            name: 'hydraServerAdminPort',
                                                             allowBlank: false,
                                                             tooltip: 'Enter your hydra server admin port'
                                                         },  {
                                                             fieldLabel: 'Hydra Server Etcd Port',
                                                             afterLabelTextTpl: required,
-                                                            id: 'hydra-server-etcd-port',
-                                                            name: 'hydra-server-etcd-port',
+                                                            id: 'hydraServerEtcdPort',
+                                                            name: 'hydraServerEtcdPort',
                                                             allowBlank: false,
                                                             tooltip: 'Enter your hydra server etcd port'
                                                         },  {
-                                                            fieldLabel: 'Topic Thunder',
+                                                            fieldLabel: 'Iframe Address',
                                                             afterLabelTextTpl: required,
-                                                            id: 'topic-thunder-url',
-                                                            name: 'topic-thunder-url',
+                                                            id: 'iframeAddr',
+                                                            name: 'iframeAddr',
                                                             allowBlank: false,
-                                                            tooltip: 'Enter your topic thunder address'
+                                                            tooltip: 'Enter your iframe address'
                                                         }, {
                                                             fieldLabel: 'Probe Password',
-                                                            id: 'probe-password',
-                                                            name: 'probe-password',
+                                                            id: 'probePassword',
+                                                            name: 'probePassword',
                                                             inputType: 'password',
                                                             allowBlank: true,
                                                             tooltip: 'Enter your hydra probe password'
                                                         }, {
                                                             fieldLabel: 'Hydra Probe Port',
-                                                            id: 'hydra-probe-port',
-                                                            name: 'hydra-probe-port',
+                                                            id: 'hydraProbePort',
+                                                            name: 'hydraProbePort',
                                                             allowBlank: true,
-                                                            tooltip: 'Enter your hydra probe password'
+                                                            tooltip: 'Enter your hydra probe port'
                                                         }],
                                                     buttons: [{
                                                             text: 'Save',
@@ -666,8 +639,8 @@ Ext.define('HydraWM.Application', {
                                                                 var form = this.up('form').getForm();
                                                                 if (form.isValid()) {
                                                                     var fieldValues = form.getValues();
-                                                                    for (key in me.config) {
-                                                                        me.config[key] = form.findField(key).getValue();
+                                                                    for (key in HydraWM.config.Config.config) {
+                                                                        HydraWM.config.Config.config[key] = form.findField(key).getValue();
                                                                     }
                                                                     Ext.getCmp('viewport').destroy();
                                                                     me.launch();
@@ -689,8 +662,8 @@ Ext.define('HydraWM.Application', {
                                     } else {
                                         me.configWindow.show(this, function() {
                                             var form = Ext.getCmp('configForm').getForm();
-                                            for (key in me.config) {
-                                                form.findField(key).setValue(me.config[key]);
+                                            for (key in HydraWM.config.Config.config) {
+                                                form.findField(key).setValue(HydraWM.config.Config.config[key]);
                                             }
                                         });
                                     }
@@ -700,7 +673,7 @@ Ext.define('HydraWM.Application', {
                     }, {
                         region: 'west',
                         xtype: 'panel',
-                        title: 'Topic Thunder',
+                        title: 'Iframe Panel',
                         collapsible: true,
                         split: true,
                         width: 800,
@@ -709,7 +682,7 @@ Ext.define('HydraWM.Application', {
                                 xtype: "component",
                                 autoEl: {
                                     tag: "iframe",
-                                    src: me.config['topic-thunder-url']
+                                    src: HydraWM.config.Config.config['iframeAddr']
                                 }
                             }]
                     }, {
@@ -819,7 +792,6 @@ Ext.define('HydraWM.Application', {
                         }
                         data.push([
                             time + i * me.REQUEST_INTERVAL,
-//                            Math.round(Math.random() * 100)
                             0
                         ]);
                     }
@@ -902,7 +874,6 @@ Ext.define('HydraWM.Application', {
                         }
                         data.push([
                             time + i * me.REQUEST_INTERVAL,
-//                            Math.round(Math.random() * 100)
                             0
                         ]);
                     }
@@ -964,19 +935,6 @@ Ext.define('HydraWM.Application', {
             me.apps[appId].charts.absolutes[attr] = chart;
         });
     },
-//    createChartsHeaderMenuItems: function(apps) {
-//        var items = [];
-//        for (app in apps) {
-//            items.push({
-//                text: app,
-//                glyph: '9650@'
-////                handler: function() {
-////                    panel.setBorderRegion('north');
-////                }
-//            });
-//        }
-//        return items;
-//    },
     createStore: function(appId) {
 //        console.log(">>> createStore");
         var me = this;
@@ -989,7 +947,7 @@ Ext.define('HydraWM.Application', {
         var me = this;
         $.ajax({
             type: "GET",
-            url: addr + "/" + action + "?password=" + me.config['probe-password'],
+            url: addr + "/" + action + "?password=" + HydraWM.config.Config.config['probePassword'],
             timeout: 3000,
             success: function(data) {
                 console.log("Succesfull response " + data + " from '" + addr + "' to order '" + action + "'");
@@ -1005,12 +963,12 @@ Ext.define('HydraWM.Application', {
         var extractPort = function(uri) {
             return uri.substring(0, uri.lastIndexOf(":"));
         };
-        var addr = extractPort(rec.get('uri')) + ":" + me.config['hydra-probe-port'];
+        var addr = extractPort(rec.get('uri')) + ":" + HydraWM.config.Config.config['hydraProbePort'];
         me.executeInstanceAction(action, addr);
     },
     executeDeleteAction: function(instance, app) {
     	var me = this;
-    	addr = 'http://' + me.config['hydra-server-addr'] + ':' + me.config['hydra-server-etcd-port'] + '/v2/keys/db/apps/Instances/' + app + '/' + instance + '?recursive=true'; 
+    	addr = 'http://' + HydraWM.config.Config.config['hydraServerAddr'] + ':' + HydraWM.config.Config.config['hydraServerEtcdPort'] + '/v2/keys/db/apps/Instances/' + app + '/' + instance + '?recursive=true'; 
     	$.ajax({
             type: "DELETE",
             url: addr,
@@ -1023,21 +981,6 @@ Ext.define('HydraWM.Application', {
             }
         });
     },
-//    executeInstanceAction: function(action, addr) {
-////        console.log(">>> executeInstanceAction");
-//        var me = this;
-//        $.ajax({
-//            type: "GET",
-//            url: addr + "/" + action + "?password=" + me.config['probe-password'],
-//            timeout: 3000,
-//            success: function(data) {
-//                console.log("Succesfull response " + data + " from '" + addr + "' to order '" + action + "'");
-//            },
-//            error: function(data) {
-//                console.log("Error response " + data + " from '" + addr + "' to order '" + action + "'");
-//            }
-//        });
-//    },
     defineModel: function(appId, fields) {
 //        console.log(">>> defineModel");
         var me = this;
