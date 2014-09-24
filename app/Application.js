@@ -640,7 +640,7 @@ Ext.define('HydraWM.Application', {
                                                             allowBlank: false,
                                                             tooltip: 'Enter your hydra server etcd port'
                                                         },  {
-                                                            fieldLabel: 'Topic Thunder',
+                                                            fieldLabel: 'Dashboard',
                                                             afterLabelTextTpl: required,
                                                             id: 'topic-thunder-url',
                                                             name: 'topic-thunder-url',
