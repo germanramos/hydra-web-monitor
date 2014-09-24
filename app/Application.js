@@ -645,7 +645,7 @@ Ext.define('HydraWM.Application', {
                                                             id: 'topic-thunder-url',
                                                             name: 'topic-thunder-url',
                                                             allowBlank: false,
-                                                            tooltip: 'Enter your topic thunder address'
+                                                            tooltip: 'Enter your dashboard address'
                                                         }, {
                                                             fieldLabel: 'Probe Password',
                                                             id: 'probe-password',
@@ -700,7 +700,7 @@ Ext.define('HydraWM.Application', {
                     }, {
                         region: 'west',
                         xtype: 'panel',
-                        title: 'Topic Thunder',
+                        title: 'Dashboard',
                         collapsible: true,
                         split: true,
                         width: 800,
