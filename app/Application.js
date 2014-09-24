@@ -37,7 +37,7 @@ Ext.define('HydraWM.Application', {
         'hydra-server-addr': 'hydra-v3-demo-server-0.aws-ireland.innotechapp.com',
         'hydra-server-admin-port': '7771',
         'hydra-server-etcd-port': '7401',
-    	'topic-thunder-url': 'http://topic-beta-topicthunder0.aws-ireland.innotechapp.com/#/panel?id=time',
+    	'topic-thunder-url': 'http://hydra-v3-demo-server-0.aws-ireland.innotechapp.com:7401/mod/dashboard/',
         //'topic-thunder-url': 'http://hydra-v3-demo-server-0:7401/mod/dashboard',
         //'topic-thunder-url': '',
         'probe-password': '',
