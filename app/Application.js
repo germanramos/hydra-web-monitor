@@ -531,7 +531,7 @@ Ext.define('HydraWM.Application', {
                 getRowClass: function(record, index) {
                     // Red line
                     var state = record.get('state');
-                    if (state !== undefined && state !== "0.00") {
+                    if (state !== undefined && state !== "0") {
                         return "redline";
                     }
                     
