@@ -35,6 +35,16 @@ Ext.define('HydraWM.Application', {
     STORE_SUFFIX: "Store",
     
     apps: {},
+    config: {
+        'hydra-server-addr': 'hydra-v3-demo-server-0.aws-ireland.innotechapp.com',
+        'hydra-server-admin-port': '7771',
+        'hydra-server-etcd-port': '7401',
+    	// 'dashboard-url': 'http://topic-alpha-topicthunder0.aws-oregon.innotechapp.com/#/panel?id=time',
+        'dashboard-url': 'http://hydra-v3-demo-server-0.aws-ireland.innotechapp.com:7401/mod/dashboard/',
+        //'dashboard-url': '',
+        'probe-password': '',
+        'hydra-probe-port': '9099'
+    },
     configWindow: null,
     maxAbsoluteChartPoints: 999,
     maxAreaChartPoints: 12,
@@ -504,7 +514,7 @@ Ext.define('HydraWM.Application', {
                 getRowClass: function(record, index) {
                     // Red line
                     var state = record.get('state');
-                    if (state !== undefined && state !== "0.00") {
+                    if (state !== undefined && state !== 0) {
                         return "redline";
                     }
                     
@@ -613,12 +623,12 @@ Ext.define('HydraWM.Application', {
                                                             allowBlank: false,
                                                             tooltip: 'Enter your hydra server etcd port'
                                                         },  {
-                                                            fieldLabel: 'Iframe Address',
+                                                            fieldLabel: 'Dashboard',
                                                             afterLabelTextTpl: required,
-                                                            id: 'iframeAddr',
-                                                            name: 'iframeAddr',
+                                                            id: 'dashboard-url',
+                                                            name: 'dashboard-url',
                                                             allowBlank: false,
-                                                            tooltip: 'Enter your iframe address'
+                                                            tooltip: 'Enter your dashboard address'
                                                         }, {
                                                             fieldLabel: 'Probe Password',
                                                             id: 'probePassword',
@@ -673,7 +683,7 @@ Ext.define('HydraWM.Application', {
                     }, {
                         region: 'west',
                         xtype: 'panel',
-                        title: 'Iframe Panel',
+                        title: 'Dashboard',
                         collapsible: true,
                         split: true,
                         width: 800,
@@ -682,7 +692,7 @@ Ext.define('HydraWM.Application', {
                                 xtype: "component",
                                 autoEl: {
                                     tag: "iframe",
-                                    src: HydraWM.config.Config.config['iframeAddr']
+                                    src: me.config['dashboard-url']
                                 }
                             }]
                     }, {
